@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高中營隊資訊網</title>
+    <style>
+        /* 簡單的 CSS 美化 */
+        body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .card h2 { margin-top: 0; color: #333; }
+        .date { color: #e74c3c; font-weight: bold; }
+        .btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔥 最新高中營隊資訊</h1>
+    <div id="camp-list">
+        <p>載入中...</p>
+    </div>
+</div>
+
+<script>
+    // ★ 請將這裡換成您在 SheetDB 取得的 API URL
+    const API_URL = 'https://sheetdb.io/api/v1/65ffji4aigfjq';
+
+    async function fetchCamps() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            renderCamps(data);
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('camp-list').innerHTML = '<p>載入失敗，請稍後再試。</p>';
+        }
+    }
+
+    function renderCamps(camps) {
+        const container = document.getElementById('camp-list');
+        container.innerHTML = ''; // 清空載入文字
+
+        camps.forEach(camp => {
+            // 假設您的試算表欄位標題是：Name (營隊名稱), Date (截止日期), Link (報名連結), School (學校)
+            // 請根據您實際的試算表標題修改以下變數 (例如 camp.Name 或 camp['營隊名稱'])
+            
+            const html = `
+                <div class="card">
+                    <h2>${camp['營隊名稱']} <span style="font-size:0.6em; color:#666;">@${camp['學校']}</span></h2>
+                    <p>📅 報名截止：<span class="date">${camp['截止日期']}</span></p>
+                    <a href="${camp['報名連結']}" target="_blank" class="btn">前往報名</a>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+    }
+
+    // 執行載入
+    fetchCamps();
+</script>
+
+</body>
+</html>
