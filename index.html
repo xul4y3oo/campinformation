@@ -5,30 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>高中營隊資訊公告板</title>
     <style>
-        /* 網站基本樣式 */
+        /* --- 基礎設定 --- */
         body { font-family: "Microsoft JhengHei", Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; }
         
-        /* 標題區 */
-        header { text-align: center; margin-bottom: 30px; }
-        h1 { color: #1a73e8; margin-bottom: 10px; }
+        /* --- 標題區 --- */
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { color: #1a73e8; margin-bottom: 5px; }
         .subtitle { color: #666; font-size: 0.9em; }
 
-        /* 卡片列表樣式 */
-        .camp-list { display: grid; gap: 15px; }
+        /* --- 搜尋欄樣式 (新增) --- */
+        .search-container { margin-bottom: 20px; text-align: center; }
+        #searchInput {
+            width: 100%; max-width: 500px; padding: 12px 20px;
+            border: 2px solid #ddd; border-radius: 25px;
+            font-size: 16px; outline: none; transition: all 0.3s;
+        }
+        #searchInput:focus { border-color: #1a73e8; box-shadow: 0 0 8px rgba(26,115,232,0.2); }
+
+        /* --- 列表與卡片 --- */
+        .camp-list { display: grid; gap: 15px; min-height: 200px; }
         .card { 
             background: white; padding: 20px; border-radius: 12px; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
             cursor: pointer; transition: transform 0.2s;
             border-left: 5px solid #1a73e8;
+            animation: fadeIn 0.5s ease;
         }
         .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         .card-date { color: #e91e63; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; }
         .card-title { font-size: 1.2em; font-weight: bold; color: #333; }
         .card-preview { color: #666; font-size: 0.9em; margin-top: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* 彈出視窗 (Modal) 樣式 */
+        /* --- 分頁控制器樣式 (新增) --- */
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 30px; flex-wrap: wrap; }
+        .page-btn {
+            background: white; border: 1px solid #ddd; color: #333;
+            padding: 8px 14px; border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .page-btn:hover { background: #f1f1f1; }
+        .page-btn.active { background: #1a73e8; color: white; border-color: #1a73e8; }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* --- 彈出視窗 (Modal) --- */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 1000;
@@ -41,13 +62,11 @@
         }
         @keyframes slideIn { from {transform: translateY(20px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
 
-        /* 彈出視窗內容 */
         .modal-close { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #999; }
         .modal-title { font-size: 1.5em; color: #333; margin-bottom: 10px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
         .modal-meta { color: #888; font-size: 0.9em; margin-bottom: 20px; }
-        .modal-content { line-height: 1.6; color: #444; white-space: pre-wrap; font-size: 1em; }
+        .modal-content { line-height: 1.8; color: #444; white-space: pre-wrap; font-size: 1em; }
         
-        /* 附件區塊 */
         .attach-section { margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
         .attach-title { font-weight: bold; color: #555; margin-bottom: 10px; display: block; }
         .attach-link { 
@@ -58,6 +77,7 @@
         .attach-link:hover { background: #e8f0fe; }
 
         .loading { text-align: center; color: #666; padding: 50px; }
+        .no-result { text-align: center; color: #888; padding: 30px; display: none; }
         .original-link-btn {
             display: block; width: 100%; text-align: center; margin-top: 20px;
             background: #1a73e8; color: white; text-decoration: none; padding: 12px;
@@ -73,8 +93,17 @@
         <div class="subtitle">即時同步各大專院校營隊情報</div>
     </header>
 
-    <div id="loading" class="loading">正在載入最新資訊，請稍候...</div>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="🔍 搜尋營隊名稱或內容..." onkeyup="filterData()">
+    </div>
+
+    <div id="loading" class="loading">正在載入資料，請稍候...</div>
+    
+    <div id="noResult" class="no-result">沒有找到符合的營隊資料。</div>
+
     <div id="campList" class="camp-list"></div>
+
+    <div id="pagination" class="pagination"></div>
 </div>
 
 <div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
@@ -94,28 +123,72 @@
 </div>
 
 <script>
-    // ★★★ 請將下面這行網址，換成您 Apps Script 部署後的「網頁應用程式網址」 ★★★
-    const API_URL = "https://script.google.com/macros/s/AKfycbz6dSwB7TMnk1iPErwMcqG2TfTLjyWZBffArdxwwlvnpaoK7HK4h94dg34kDEzVfqYy/exec"; 
+    // ★★★ 請將這裡換成您的 Apps Script 網頁應用程式網址 ★★★
+    const API_URL = "https://script.google.com/macros/s/您的部署ID/exec"; 
 
-    // 載入資料
+    // 全域變數
+    let allCamps = [];       // 存放所有資料
+    let filteredCamps = [];  // 存放搜尋後的資料
+    let currentPage = 1;     // 目前頁碼
+    const itemsPerPage = 15; // ★ 設定每頁顯示 15 筆
+
+    // 初始化：載入資料
     fetch(API_URL)
         .then(response => response.json())
         .then(data => {
             document.getElementById('loading').style.display = 'none';
-            renderCamps(data);
+            // 將資料反轉，讓最新的日期排在最上面
+            allCamps = data.reverse();
+            filteredCamps = allCamps; // 預設顯示全部
+            
+            renderPage(1); // 顯示第一頁
         })
         .catch(error => {
             document.getElementById('loading').innerHTML = '❌ 讀取失敗，請確認 API 網址設定正確。';
             console.error(error);
         });
 
-    function renderCamps(camps) {
+    // --- 核心功能：搜尋過濾 ---
+    function filterData() {
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        
+        filteredCamps = allCamps.filter(camp => {
+            const titleMatch = camp.title.toLowerCase().includes(keyword);
+            const contentMatch = camp.content && camp.content.toLowerCase().includes(keyword);
+            return titleMatch || contentMatch;
+        });
+
+        // 搜尋後重置回第一頁
+        renderPage(1);
+    }
+
+    // --- 核心功能：渲染頁面 (含分頁邏輯) ---
+    function renderPage(page) {
+        currentPage = page;
         const listContainer = document.getElementById('campList');
-        // 反轉陣列，讓最新的顯示在最上面
-        camps.reverse().forEach(camp => {
-            // 處理日期格式 (取前10個字: YYYY-MM-DD)
+        const noResult = document.getElementById('noResult');
+        listContainer.innerHTML = ''; // 清空列表
+
+        // 檢查是否有資料
+        if (filteredCamps.length === 0) {
+            noResult.style.display = 'block';
+            document.getElementById('pagination').innerHTML = ''; // 隱藏分頁
+            return;
+        } else {
+            noResult.style.display = 'none';
+        }
+
+        // 計算分頁切片
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageItems = filteredCamps.slice(startIndex, endIndex);
+
+        // 生成卡片
+        pageItems.forEach(camp => {
             let dateStr = camp.date ? String(camp.date).substring(0, 10) : '未標示';
-            
+            // 如果日期是 ISO 格式，轉換一下顯示
+            if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
@@ -123,31 +196,77 @@
                 <div class="card-title">${camp.title}</div>
                 <div class="card-preview">點擊查看詳細資訊...</div>
             `;
-            // 點擊卡片開啟彈窗
             card.onclick = () => openModal(camp);
             listContainer.appendChild(card);
         });
+
+        // 渲染分頁按鈕
+        renderPagination();
+        
+        // 頁面滾動到頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // --- 核心功能：生成分頁按鈕 ---
+    function renderPagination() {
+        const paginationContainer = document.getElementById('pagination');
+        paginationContainer.innerHTML = '';
+        const totalPages = Math.ceil(filteredCamps.length / itemsPerPage);
+
+        if (totalPages <= 1) return; // 只有一頁就不顯示分頁器
+
+        // 上一頁按鈕
+        const prevBtn = document.createElement('button');
+        prevBtn.innerText = '« 上一頁';
+        prevBtn.className = 'page-btn';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => renderPage(currentPage - 1);
+        paginationContainer.appendChild(prevBtn);
+
+        // 頁碼按鈕 (最多顯示 5 個頁碼，避免太長)
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement('button');
+            btn.innerText = i;
+            btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+            btn.onclick = () => renderPage(i);
+            paginationContainer.appendChild(btn);
+        }
+
+        // 下一頁按鈕
+        const nextBtn = document.createElement('button');
+        nextBtn.innerText = '下一頁 »';
+        nextBtn.className = 'page-btn';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => renderPage(currentPage + 1);
+        paginationContainer.appendChild(nextBtn);
+    }
+
+    // --- 彈出視窗功能 (維持不變) ---
     function openModal(camp) {
         let dateStr = camp.date ? String(camp.date).substring(0, 10) : '';
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+
         document.getElementById('modalDate').innerText = "發佈日期：" + dateStr;
         document.getElementById('modalTitle').innerText = camp.title;
         document.getElementById('modalContent').innerText = camp.content || "無詳細內容";
         document.getElementById('modalLink').href = camp.link;
 
-        // 處理附件
         const attachContainer = document.getElementById('modalAttachments');
         const attachSection = document.getElementById('attachSection');
         attachContainer.innerHTML = '';
         
         if (camp.attachments && camp.attachments.trim() !== "" && camp.attachments !== "無附件") {
             attachSection.style.display = 'block';
-            // 附件通常是用換行符號分隔的
             let files = camp.attachments.split('\n');
             files.forEach((fileUrl, index) => {
                 let fileName = "附件檔案 " + (index + 1);
-                // 嘗試從網址抓檔名
                 try { fileName = decodeURIComponent(fileUrl.split('/').pop().split('?')[0]); } catch(e){}
                 
                 let a = document.createElement('a');
@@ -160,14 +279,11 @@
         } else {
             attachSection.style.display = 'none';
         }
-
         document.getElementById('modalOverlay').style.display = 'flex';
     }
 
     function closeModal(event) {
-        if (event.target.id === 'modalOverlay') {
-            document.getElementById('modalOverlay').style.display = 'none';
-        }
+        if (event.target.id === 'modalOverlay') document.getElementById('modalOverlay').style.display = 'none';
     }
     
     function closeModalBtn() {
