@@ -3,77 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高中營隊資訊網</title>
+    <title>高中營隊資訊公告板</title>
     <style>
-        /* 簡單的 CSS 美化 */
-        body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .card {
-            background: white;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        /* 網站基本樣式 */
+        body { font-family: "Microsoft JhengHei", Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        /* 標題區 */
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: #1a73e8; margin-bottom: 10px; }
+        .subtitle { color: #666; font-size: 0.9em; }
+
+        /* 卡片列表樣式 */
+        .camp-list { display: grid; gap: 15px; }
+        .card { 
+            background: white; padding: 20px; border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            cursor: pointer; transition: transform 0.2s;
+            border-left: 5px solid #1a73e8;
         }
-        .card h2 { margin-top: 0; color: #333; }
-        .date { color: #e74c3c; font-weight: bold; }
-        .btn {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
+        .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+        
+        .card-date { color: #e91e63; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; }
+        .card-title { font-size: 1.2em; font-weight: bold; color: #333; }
+        .card-preview { color: #666; font-size: 0.9em; margin-top: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* 彈出視窗 (Modal) 樣式 */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            justify-content: center; align-items: center;
         }
-        .btn:hover { background-color: #0056b3; }
+        .modal {
+            background: white; width: 90%; max-width: 700px; max-height: 90vh;
+            border-radius: 15px; padding: 25px; overflow-y: auto;
+            position: relative; animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn { from {transform: translateY(20px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+
+        /* 彈出視窗內容 */
+        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #999; }
+        .modal-title { font-size: 1.5em; color: #333; margin-bottom: 10px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+        .modal-meta { color: #888; font-size: 0.9em; margin-bottom: 20px; }
+        .modal-content { line-height: 1.6; color: #444; white-space: pre-wrap; font-size: 1em; }
+        
+        /* 附件區塊 */
+        .attach-section { margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        .attach-title { font-weight: bold; color: #555; margin-bottom: 10px; display: block; }
+        .attach-link { 
+            display: inline-block; background: #fff; border: 1px solid #ddd; 
+            padding: 8px 12px; border-radius: 20px; text-decoration: none; 
+            color: #1a73e8; font-size: 0.9em; margin-right: 10px; margin-bottom: 10px;
+        }
+        .attach-link:hover { background: #e8f0fe; }
+
+        .loading { text-align: center; color: #666; padding: 50px; }
+        .original-link-btn {
+            display: block; width: 100%; text-align: center; margin-top: 20px;
+            background: #1a73e8; color: white; text-decoration: none; padding: 12px;
+            border-radius: 8px; font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🔥 最新高中營隊資訊</h1>
-    <div id="camp-list">
-        <p>載入中...</p>
+    <header>
+        <h1>🎓 最新高中營隊資訊</h1>
+        <div class="subtitle">即時同步各大專院校營隊情報</div>
+    </header>
+
+    <div id="loading" class="loading">正在載入最新資訊，請稍候...</div>
+    <div id="campList" class="camp-list"></div>
+</div>
+
+<div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal">
+        <span class="modal-close" onclick="closeModalBtn()">×</span>
+        <div id="modalDate" class="modal-meta" style="color:#e91e63; font-weight:bold;"></div>
+        <div id="modalTitle" class="modal-title"></div>
+        <div id="modalContent" class="modal-content"></div>
+        
+        <div id="attachSection" class="attach-section" style="display:none;">
+            <span class="attach-title">📎 相關附件下載：</span>
+            <div id="modalAttachments"></div>
+        </div>
+
+        <a id="modalLink" href="#" target="_blank" class="original-link-btn">前往原始公告頁面</a>
     </div>
 </div>
 
 <script>
-    // ★ 請將這裡換成您在 SheetDB 取得的 API URL
-    const API_URL = 'https://sheetdb.io/api/v1/65ffji4aigfjq';
+    // ★★★ 請將下面這行網址，換成您 Apps Script 部署後的「網頁應用程式網址」 ★★★
+    const API_URL = "https://script.google.com/macros/s/AKfycbz6dSwB7TMnk1iPErwMcqG2TfTLjyWZBffArdxwwlvnpaoK7HK4h94dg34kDEzVfqYy/exec"; 
 
-    async function fetchCamps() {
-        try {
-            const response = await fetch(API_URL);
-            const data = await response.json();
+    // 載入資料
+    fetch(API_URL)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
             renderCamps(data);
-        } catch (error) {
-            console.error('Error:', error);
-            document.getElementById('camp-list').innerHTML = '<p>載入失敗，請稍後再試。</p>';
-        }
-    }
+        })
+        .catch(error => {
+            document.getElementById('loading').innerHTML = '❌ 讀取失敗，請確認 API 網址設定正確。';
+            console.error(error);
+        });
 
     function renderCamps(camps) {
-        const container = document.getElementById('camp-list');
-        container.innerHTML = ''; // 清空載入文字
-
-        camps.forEach(camp => {
-            // 假設您的試算表欄位標題是：Name (營隊名稱), Date (截止日期), Link (報名連結), School (學校)
-            // 請根據您實際的試算表標題修改以下變數 (例如 camp.Name 或 camp['營隊名稱'])
+        const listContainer = document.getElementById('campList');
+        // 反轉陣列，讓最新的顯示在最上面
+        camps.reverse().forEach(camp => {
+            // 處理日期格式 (取前10個字: YYYY-MM-DD)
+            let dateStr = camp.date ? String(camp.date).substring(0, 10) : '未標示';
             
-            const html = `
-                <div class="card">
-                    <h2>${camp['營隊名稱']} <span style="font-size:0.6em; color:#666;">@${camp['學校']}</span></h2>
-                    <p>📅 報名截止：<span class="date">${camp['截止日期']}</span></p>
-                    <a href="${camp['報名連結']}" target="_blank" class="btn">前往報名</a>
-                </div>
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-date">📅 ${dateStr}</div>
+                <div class="card-title">${camp.title}</div>
+                <div class="card-preview">點擊查看詳細資訊...</div>
             `;
-            container.innerHTML += html;
+            // 點擊卡片開啟彈窗
+            card.onclick = () => openModal(camp);
+            listContainer.appendChild(card);
         });
     }
 
-    // 執行載入
-    fetchCamps();
+    function openModal(camp) {
+        let dateStr = camp.date ? String(camp.date).substring(0, 10) : '';
+        document.getElementById('modalDate').innerText = "發佈日期：" + dateStr;
+        document.getElementById('modalTitle').innerText = camp.title;
+        document.getElementById('modalContent').innerText = camp.content || "無詳細內容";
+        document.getElementById('modalLink').href = camp.link;
+
+        // 處理附件
+        const attachContainer = document.getElementById('modalAttachments');
+        const attachSection = document.getElementById('attachSection');
+        attachContainer.innerHTML = '';
+        
+        if (camp.attachments && camp.attachments.trim() !== "" && camp.attachments !== "無附件") {
+            attachSection.style.display = 'block';
+            // 附件通常是用換行符號分隔的
+            let files = camp.attachments.split('\n');
+            files.forEach((fileUrl, index) => {
+                let fileName = "附件檔案 " + (index + 1);
+                // 嘗試從網址抓檔名
+                try { fileName = decodeURIComponent(fileUrl.split('/').pop().split('?')[0]); } catch(e){}
+                
+                let a = document.createElement('a');
+                a.href = fileUrl;
+                a.target = "_blank";
+                a.className = "attach-link";
+                a.innerText = "📄 " + fileName;
+                attachContainer.appendChild(a);
+            });
+        } else {
+            attachSection.style.display = 'none';
+        }
+
+        document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function closeModal(event) {
+        if (event.target.id === 'modalOverlay') {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+    }
+    
+    function closeModalBtn() {
+        document.getElementById('modalOverlay').style.display = 'none';
+    }
 </script>
 
 </body>
