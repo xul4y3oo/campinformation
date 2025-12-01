@@ -4,166 +4,203 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>高中營隊資訊公告板</title>
-    <link rel="icon" href="https://www.flaticon.com/free-icon-font/poop_9856743">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/128/9856/9856743.png">
 
     <style>
-        /* --- 基礎設定 (使用選項三：高級流光背景) --- */
+        /* =========================================
+           1. 全域樣式與動態背景
+           ========================================= */
         body {
-            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            font-family: "Microsoft JhengHei", "Heiti TC", Arial, sans-serif;
             margin: 0;
             padding: 20px;
             min-height: 100vh;
+            /* 動態流光漸層背景 */
             background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
+            color: #333;
         }
 
         .container { max-width: 900px; margin: 0 auto; }
         
-        /* 標題區 */
-        header { text-align: center; margin-bottom: 20px; }
-        h1 { color: white; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .subtitle { color: rgba(255,255,255,0.9); font-size: 0.9em; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: white; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .subtitle { color: rgba(255,255,255,0.95); font-size: 1em; letter-spacing: 1px; }
 
-        /* --- 搜尋欄與選單容器 (Flex排版) --- */
+        /* =========================================
+           2. 搜尋欄與下拉選單 (修復版)
+           ========================================= */
         .search-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 30px;
+            position: relative;
+            z-index: 10; /* 確保選單在最上層 */
         }
 
-        /* 搜尋框外層 */
         .search-box-wrapper {
-            flex-grow: 1; /* 佔據剩餘空間 */
+            flex-grow: 1;
             max-width: 500px;
         }
 
         #searchInput {
-            width: 100%; box-sizing: border-box; /* 確保 padding 不會撐爆寬度 */
-            padding: 12px 20px;
-            border: none; border-radius: 25px;
+            width: 100%; box-sizing: border-box;
+            padding: 14px 25px;
+            border: none; border-radius: 30px;
             font-size: 16px; outline: none; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        /* --- 下拉選單樣式 --- */
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .dropbtn {
-            background-color: white;
-            color: #1a73e8;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             transition: all 0.3s;
-            white-space: nowrap;
+        }
+        #searchInput:focus { box-shadow: 0 6px 20px rgba(0,0,0,0.2); transform: scale(1.01); }
+
+        /* 下拉選單容器 */
+        .dropdown { position: relative; display: inline-block; }
+
+        /* 下拉按鈕 */
+        .dropbtn {
+            background-color: white; color: #1a73e8;
+            padding: 14px 25px; font-size: 16px; font-weight: bold;
+            border: none; border-radius: 30px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s; white-space: nowrap;
+        }
+        .dropbtn:hover { background-color: #f8f9fa; transform: translateY(-2px); }
+
+        /* 下拉內容區塊 */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%; /* 位於按鈕正下方 */
+            margin-top: 10px; /* 與按鈕保持一點距離 */
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            overflow: visible; /* 允許偽元素超出 */
+            z-index: 99;
+            animation: fadeInMenu 0.2s ease;
         }
 
-        .dropbtn:hover { background-color: #f1f1f1; transform: translateY(-2px); }
-
+        /* ★★★ 關鍵修復：建立透明橋樑，防止滑鼠滑動時選單消失 ★★★ */
         .dropdown-content::before {
-    content: "";
-    position: absolute;
-    /* 讓這個透明區塊往上延伸，蓋住那個 5px 的空隙 */
-    top: -15px; 
-    left: 0;
-    width: 100%;
-    height: 15px; /* 高度足夠填補空隙即可 */
-    background-color: transparent; /* 透明的，看不見但摸得到 */
-    display: block;
-}
+            content: "";
+            position: absolute;
+            top: -20px; /* 往上延伸覆蓋 margin 的空隙 */
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: transparent; /* 透明 */
+            display: block;
+        }
 
         .dropdown-content a {
-            color: #333;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-            font-size: 15px;
-            border-bottom: 1px solid #f0f0f0;
+            color: #333; padding: 15px 20px;
+            text-decoration: none; display: block; font-size: 15px;
+            border-bottom: 1px solid #f0f0f0; transition: 0.2s;
         }
-        .dropdown-content a:last-child { border-bottom: none; }
-        .dropdown-content a:hover { background-color: #e8f0fe; color: #1a73e8; }
+        .dropdown-content a:first-child { border-radius: 12px 12px 0 0; }
+        .dropdown-content a:last-child { border-bottom: none; border-radius: 0 0 12px 12px; }
+        .dropdown-content a:hover { background-color: #e8f0fe; color: #1a73e8; padding-left: 25px; }
 
         .dropdown:hover .dropdown-content { display: block; }
 
+        /* =========================================
+           3. 列表與卡片樣式 (寬敞版)
+           ========================================= */
+        .camp-list { 
+            display: grid; 
+            gap: 25px; /* 卡片間距 */
+            min-height: 200px; 
+        }
 
-        /* --- 列表與卡片 --- */
-        .camp-list { display: grid; gap: 25px; min-height: 200px; }
         .card { 
-            background: rgba(255, 255, 255, 0.95); /* 半透明白 */
-            padding: 25px; border-radius: 16px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px; /* 內部空間 */
+            border-radius: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
             cursor: pointer; transition: all 0.3s ease;
             border-left: 6px solid #1a73e8;
             
+            /* 初始隱藏，由 JS 控制延遲動畫 */
             opacity: 0;
             animation: fadeInUp 0.5s ease forwards;
         }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         
         .card-date { color: #e91e63; font-weight: bold; font-size: 0.9em; margin-bottom: 12px; letter-spacing: 0.5px; }
-        .card-title { font-size: 1.3em; font-weight: bold; color: #333; line-height: 1.4; margin-bottom: 12px; }
+        .card-title { font-size: 1.3em; font-weight: bold; color: #222; line-height: 1.5; margin-bottom: 12px; }
         .card-preview { 
-            color: #555; font-size: 0.95em; margin-top: 10px; line-height: 1.6;
+            color: #555; font-size: 0.95em; line-height: 1.6;
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        /* --- 分頁控制器 --- */
-        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 30px; flex-wrap: wrap; }
+        /* =========================================
+           4. 分頁與彈窗
+           ========================================= */
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 40px; flex-wrap: wrap; }
         .page-btn {
-            background: rgba(255,255,255,0.8); border: none; color: #333;
-            padding: 8px 14px; border-radius: 6px; cursor: pointer; transition: 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.9); border: none; color: #333;
+            padding: 10px 16px; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-weight: bold;
         }
         .page-btn:hover { background: white; transform: translateY(-2px); }
-        .page-btn.active { background: #1a73e8; color: white; }
-        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .page-btn.active { background: #1a73e8; color: white; transform: scale(1.1); }
+        .page-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-        /* --- 彈出視窗 --- */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1000;
+            background: rgba(0,0,0,0.6); z-index: 1000;
+            backdrop-filter: blur(3px); /* 背景模糊效果 */
             justify-content: center; align-items: center;
         }
         .modal {
-            background: white; width: 90%; max-width: 700px; max-height: 90vh;
-            border-radius: 15px; padding: 25px; overflow-y: auto;
-            position: relative; animation: slideIn 0.3s ease;
+            background: white; width: 90%; max-width: 800px; max-height: 85vh;
+            border-radius: 20px; padding: 30px; overflow-y: auto;
+            position: relative; animation: slideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); /* 彈性動畫 */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
-        @keyframes slideIn { from {transform: translateY(20px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
-        @keyframes fadeInUp { from {opacity: 0; transform: translateY(30px);} to {opacity: 1; transform: translateY(0);} }
+
+        /* 動畫關鍵影格 */
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes fadeInUp { from {opacity: 0; transform: translateY(30px);} to {opacity: 1; transform: translateY(0);} }
+        @keyframes slideIn { from {transform: translateY(30px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+        @keyframes fadeInMenu { from {opacity: 0; transform: translateY(-10px);} to {opacity: 1; transform: translateY(0);} }
 
-        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #999; }
-        .modal-title { font-size: 1.5em; color: #333; margin-bottom: 10px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
-        .modal-meta { color: #888; font-size: 0.9em; margin-bottom: 20px; }
-        .modal-content { line-height: 1.8; color: #444; white-space: pre-wrap; font-size: 1em; }
+        .modal-close { 
+            position: absolute; top: 20px; right: 25px; font-size: 30px; 
+            cursor: pointer; color: #aaa; transition: 0.2s; line-height: 1;
+        }
+        .modal-close:hover { color: #333; transform: rotate(90deg); }
         
-        .attach-section { margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
-        .attach-title { font-weight: bold; color: #555; margin-bottom: 10px; display: block; }
+        .modal-title { font-size: 1.6em; color: #222; margin-bottom: 15px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-weight: bold; }
+        .modal-meta { color: #e91e63; font-weight: bold; margin-bottom: 20px; display: flex; align-items: center; gap: 5px; }
+        .modal-content { line-height: 1.8; color: #444; white-space: pre-wrap; font-size: 1.05em; }
+        
+        .attach-section { margin-top: 30px; background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #eee; }
+        .attach-title { font-weight: bold; color: #555; margin-bottom: 15px; display: block; }
         .attach-link { 
-            display: inline-block; background: #fff; border: 1px solid #ddd; 
-            padding: 8px 12px; border-radius: 20px; text-decoration: none; 
-            color: #1a73e8; font-size: 0.9em; margin-right: 10px; margin-bottom: 10px;
+            display: inline-flex; align-items: center; gap: 5px;
+            background: white; border: 1px solid #ddd; 
+            padding: 10px 16px; border-radius: 30px; text-decoration: none; 
+            color: #1a73e8; font-size: 0.95em; margin-right: 10px; margin-bottom: 10px;
+            transition: 0.2s;
         }
-        .attach-link:hover { background: #e8f0fe; }
+        .attach-link:hover { background: #1a73e8; color: white; border-color: #1a73e8; box-shadow: 0 4px 10px rgba(26,115,232,0.2); }
 
-        .loading { text-align: center; color: white; padding: 50px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .no-result { text-align: center; color: rgba(255,255,255,0.8); padding: 30px; display: none; }
+        .loading { text-align: center; color: white; padding: 60px; font-size: 1.2em; font-weight: bold; text-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .no-result { text-align: center; color: rgba(255,255,255,0.9); padding: 40px; display: none; font-size: 1.1em; }
+        
         .original-link-btn {
-            display: block; width: 100%; text-align: center; margin-top: 20px;
-            background: #1a73e8; color: white; text-decoration: none; padding: 12px;
-            border-radius: 8px; font-weight: bold;
+            display: block; width: 100%; text-align: center; margin-top: 25px;
+            background: linear-gradient(90deg, #1a73e8, #0d47a1); color: white; 
+            text-decoration: none; padding: 15px; border-radius: 12px; font-weight: bold;
+            transition: 0.3s; box-shadow: 0 4px 15px rgba(26,115,232,0.3);
         }
+        .original-link-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,115,232,0.4); }
     </style>
 </head>
 <body>
@@ -187,8 +224,9 @@
         </div>
     </div>
 
-    <div id="loading" class="loading">正在載入資料，請稍候...</div>
-    <div id="noResult" class="no-result">沒有找到符合的營隊資料。</div>
+    <div id="loading" class="loading">正在載入最新營隊資訊...</div>
+    <div id="noResult" class="no-result">😕 沒有找到符合的資料，請嘗試其他關鍵字。</div>
+    
     <div id="campList" class="camp-list"></div>
     <div id="pagination" class="pagination"></div>
 </div>
@@ -196,7 +234,7 @@
 <div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
     <div class="modal">
         <span class="modal-close" onclick="closeModalBtn()">×</span>
-        <div id="modalDate" class="modal-meta" style="color:#e91e63; font-weight:bold;"></div>
+        <div id="modalDate" class="modal-meta"></div>
         <div id="modalTitle" class="modal-title"></div>
         <div id="modalContent" class="modal-content"></div>
         
@@ -205,29 +243,27 @@
             <div id="modalAttachments"></div>
         </div>
 
-        <a id="modalLink" href="#" target="_blank" class="original-link-btn">前往原始公告頁面</a>
+        <a id="modalLink" href="#" target="_blank" class="original-link-btn">前往原始公告頁面 ↗</a>
     </div>
 </div>
 
 <script>
     // ===============================================
-    // ★★★ 設定區 ★★★
+    // ★★★ 設定區 (請修改這裡) ★★★
     // ===============================================
     
-    // 1. 請填入您的 Apps Script 網址
+    // 1. 請填入您的 Google Apps Script 部署網址
     const API_URL = "https://script.google.com/macros/s/AKfycbxNOG_cxSIFr7RKC5mlb8wGpKBmUrTPMFv4QqNy0hxWj9X5deMX3V7NBt7mwoI_5V0S/exec"; 
 
-    // 2. 請填入您的 LINE Bot ID (記得要有 @)
-    const LINE_BOT_ID = "@您的LineBotID"; 
+    // 2. 請填入 LINE Bot ID
+    const LINE_BOT_ID = "@087ptzrl"; 
 
     // ===============================================
 
-    // 初始化：設定 LINE Bot 連結
+    // 初始化 LINE 連結
     document.addEventListener("DOMContentLoaded", function() {
         if (LINE_BOT_ID) {
-            // LINE 加入好友的連結格式
-            const lineUrl = "https://line.me/R/ti/p/" + LINE_BOT_ID;
-            document.getElementById('lineBotLink').href = lineUrl;
+            document.getElementById('lineBotLink').href = "https://line.me/R/ti/p/" + LINE_BOT_ID;
         }
     });
 
@@ -236,21 +272,23 @@
     let currentPage = 1;     
     const itemsPerPage = 15; 
 
+    // 取得資料
     fetch(API_URL)
         .then(response => response.json())
         .then(data => {
             document.getElementById('loading').style.display = 'none';
-            allCamps = data.reverse();
+            allCamps = data.reverse(); // 最新的排前面
             filteredCamps = allCamps; 
             renderPage(1); 
         })
         .catch(error => {
-            document.getElementById('loading').innerHTML = '❌ 讀取失敗，請確認 API 網址設定正確。';
+            document.getElementById('loading').innerHTML = '❌ 資料讀取失敗，請確認 API 網址是否正確。';
             console.error(error);
         });
 
+    // 搜尋過濾
     function filterData() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
         filteredCamps = allCamps.filter(camp => {
             const titleMatch = camp.title.toLowerCase().includes(keyword);
             const contentMatch = camp.content && camp.content.toLowerCase().includes(keyword);
@@ -259,6 +297,7 @@
         renderPage(1);
     }
 
+    // 渲染頁面 (含卡片浮現動畫)
     function renderPage(page) {
         currentPage = page;
         const listContainer = document.getElementById('campList');
@@ -283,7 +322,7 @@
 
             const card = document.createElement('div');
             card.className = 'card';
-            // 設定浮現延遲
+            // 設定延遲動畫：每張卡片比上一張晚 0.05 秒出現
             card.style.animationDelay = `${index * 0.05}s`;
 
             card.innerHTML = `
@@ -299,6 +338,7 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // 生成分頁按鈕
     function renderPagination() {
         const paginationContainer = document.getElementById('pagination');
         paginationContainer.innerHTML = '';
@@ -306,33 +346,32 @@
 
         if (totalPages <= 1) return; 
 
-        const prevBtn = document.createElement('button');
-        prevBtn.innerText = '«';
-        prevBtn.className = 'page-btn';
-        prevBtn.disabled = currentPage === 1;
-        prevBtn.onclick = () => renderPage(currentPage - 1);
-        paginationContainer.appendChild(prevBtn);
+        const createBtn = (text, onClick, disabled = false, isActive = false) => {
+            const btn = document.createElement('button');
+            btn.innerText = text;
+            btn.className = `page-btn ${isActive ? 'active' : ''}`;
+            btn.disabled = disabled;
+            btn.onclick = onClick;
+            return btn;
+        };
 
+        // 上一頁
+        paginationContainer.appendChild(createBtn('«', () => renderPage(currentPage - 1), currentPage === 1));
+
+        // 頁碼邏輯 (最多顯示 5 個)
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPages, startPage + 4);
         if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
 
         for (let i = startPage; i <= endPage; i++) {
-            const btn = document.createElement('button');
-            btn.innerText = i;
-            btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-            btn.onclick = () => renderPage(i);
-            paginationContainer.appendChild(btn);
+            paginationContainer.appendChild(createBtn(i, () => renderPage(i), false, i === currentPage));
         }
 
-        const nextBtn = document.createElement('button');
-        nextBtn.innerText = '»';
-        nextBtn.className = 'page-btn';
-        nextBtn.disabled = currentPage === totalPages;
-        nextBtn.onclick = () => renderPage(currentPage + 1);
-        paginationContainer.appendChild(nextBtn);
+        // 下一頁
+        paginationContainer.appendChild(createBtn('»', () => renderPage(currentPage + 1), currentPage === totalPages));
     }
 
+    // 開啟彈窗
     function openModal(camp) {
         let dateStr = camp.date ? String(camp.date).substring(0, 10) : '';
         if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
@@ -346,18 +385,23 @@
         const attachSection = document.getElementById('attachSection');
         attachContainer.innerHTML = '';
         
+        // 處理附件顯示
         if (camp.attachments && camp.attachments.trim() !== "" && camp.attachments !== "無附件") {
             attachSection.style.display = 'block';
             let files = camp.attachments.split('\n');
             files.forEach((fileUrl, index) => {
-                let fileName = "附件檔案 " + (index + 1);
-                try { fileName = decodeURIComponent(fileUrl.split('/').pop().split('?')[0]); } catch(e){}
+                // 嘗試解析檔名
+                let fileName = "附件下載 " + (index + 1);
+                try { 
+                    const urlObj = new URL(fileUrl);
+                    fileName = decodeURIComponent(urlObj.pathname.split('/').pop());
+                } catch(e){}
                 
                 let a = document.createElement('a');
                 a.href = fileUrl;
                 a.target = "_blank";
                 a.className = "attach-link";
-                a.innerText = "📄 " + fileName;
+                a.innerHTML = "📄 " + fileName;
                 attachContainer.appendChild(a);
             });
         } else {
