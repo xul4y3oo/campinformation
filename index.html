@@ -24,20 +24,29 @@
         #searchInput:focus { border-color: #1a73e8; box-shadow: 0 0 8px rgba(26,115,232,0.2); }
 
         /* --- 列表與卡片 --- */
-        .camp-list { display: grid; gap: 15px; min-height: 200px; }
-        .card { 
-            background: white; padding: 20px; border-radius: 12px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
-            cursor: pointer; transition: transform 0.2s;
-            border-left: 5px solid #1a73e8;
-            animation: fadeIn 0.5s ease;
+        /* 修改 .card 的樣式 */
+    .card { 
+        background: white; padding: 20px; border-radius: 12px; 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        cursor: pointer; transition: transform 0.2s;
+        border-left: 5px solid #1a73e8;
+    
+        /* ★★★ 新增以下這兩行 ★★★ */
+        opacity: 0; /* 一開始先隱藏 */
+        animation: fadeInUp 0.5s ease forwards; /* 設定動畫執行 0.5秒，結束後停留在最後狀態 */
         }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .card-date { color: #e91e63; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; }
-        .card-title { font-size: 1.2em; font-weight: bold; color: #333; }
-        .card-preview { color: #666; font-size: 0.9em; margin-top: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ★★★ 新增這個動畫定義 (放在 .card 下面即可) ★★★ */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px); /* 從下方 30px 處開始 */
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0); /* 回到原位 */
+        }
+    }
 
         /* --- 分頁控制器樣式 (新增) --- */
         .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 30px; flex-wrap: wrap; }
@@ -189,21 +198,26 @@
         const pageItems = filteredCamps.slice(startIndex, endIndex);
 
         // 生成卡片
-        pageItems.forEach(camp => {
-            let dateStr = camp.date ? String(camp.date).substring(0, 10) : '未標示';
-            // 如果日期是 ISO 格式，轉換一下顯示
-            if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+        // 修改 pageItems.forEach 的部分
+    pageItems.forEach((camp, index) => { // 注意這裡多了一個 index 參數
+        let dateStr = camp.date ? String(camp.date).substring(0, 10) : '未標示';
+        if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
 
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <div class="card-date">📅 ${dateStr}</div>
-                <div class="card-title">${camp.title}</div>
-                <div class="card-preview">點擊查看詳細資訊...</div>
+        const card = document.createElement('div');
+        card.className = 'card';
+    
+        // ★★★ 加入這行：設定動畫延遲 ★★★
+        // 邏輯：第1張延遲0秒，第2張延遲0.1秒，第3張0.2秒...以此類推
+        card.style.animationDelay = `${index * 0.1}s`; 
+
+        card.innerHTML = `
+            <div class="card-date">📅 ${dateStr}</div>
+            <div class="card-title">${camp.title}</div>
+            <div class="card-preview">點擊查看詳細資訊...</div>
             `;
-            card.onclick = () => openModal(camp);
-            listContainer.appendChild(card);
-        });
+        card.onclick = () => openModal(camp);
+        listContainer.appendChild(card);
+    });
 
         // 渲染分頁按鈕
         renderPagination();
