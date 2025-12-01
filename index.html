@@ -25,16 +25,63 @@
 
         /* --- 列表與卡片 --- */
         /* 修改 .card 的樣式 */
-    .card { 
-        background: white; padding: 20px; border-radius: 12px; 
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
-        cursor: pointer; transition: transform 0.2s;
-        border-left: 5px solid #1a73e8;
+    .camp-list { 
+    display: grid; 
+    gap: 25px; /* ★ 修改 1: 間距從 15px 改為 25px，卡片分更開 */
+    min-height: 200px; 
+}
+
+/* --- 卡片樣式調整 --- */
+.card { 
+    background: white; 
+    padding: 25px; /* ★ 修改 2: 內距從 20px 改為 25px，內部更寬敞 */
+    border-radius: 16px; /* 圓角稍微大一點，看起來更柔和 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* 陰影稍微加深，增加立體感 */
+    cursor: pointer; 
+    transition: all 0.3s ease;
+    border-left: 6px solid #1a73e8; /* 左邊線條加粗一點 */
     
-        /* ★★★ 新增以下這兩行 ★★★ */
-        opacity: 0; /* 一開始先隱藏 */
-        animation: fadeInUp 0.5s ease forwards; /* 設定動畫執行 0.5秒，結束後停留在最後狀態 */
-        }
+    /* 動畫設定 (保留您原本的) */
+    opacity: 0;
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.card:hover { 
+    transform: translateY(-5px); /* 浮起的高度增加 */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
+}
+
+/* --- 卡片內部文字間距調整 --- */
+.card-date { 
+    color: #e91e63; 
+    font-weight: bold; 
+    font-size: 0.9em; 
+    margin-bottom: 12px; /* ★ 修改 3: 日期跟標題拉開距離 */
+    letter-spacing: 0.5px; /* 字元間距微調 */
+}
+
+.card-title { 
+    font-size: 1.3em; /* 字體稍微加大 */
+    font-weight: bold; 
+    color: #333; 
+    line-height: 1.4; /* ★ 修改 4: 標題行高增加，避免兩行字貼在一起 */
+    margin-bottom: 12px; /* 標題跟預覽文字拉開距離 */
+}
+
+.card-preview { 
+    color: #666; 
+    font-size: 0.95em; 
+    margin-top: 10px; 
+    line-height: 1.6; /* 預覽文字行高增加 */
+    
+    /* 讓預覽文字顯示兩行再截斷 (比單行更好看) */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal; /* 允許換行 */
+}
 
     /* ★★★ 新增這個動畫定義 (放在 .card 下面即可) ★★★ */
     @keyframes fadeInUp {
