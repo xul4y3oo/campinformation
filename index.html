@@ -15,19 +15,21 @@
     font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
     margin: 0; padding: 20px; min-height: 100vh;
     
-    /* 底色：極淡的灰白 */
-    background-color: #f8f9fa;
+    /* 改用這組配色：清新的藍綠色調 */
+    background: linear-gradient(-45deg, #a18cd1, #fbc2eb, #a6c0fe, #f68084);
+    background-size: 400% 400%;
     
-    /* 使用 CSS 畫出格子線 */
-    background-image: 
-        linear-gradient(#e5e7eb 1px, transparent 1px), 
-        linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
-        
-    /* 格子的大小 */
-    background-size: 30px 30px;
+    /* 動畫時間拉長到 20秒，讓它流動得更緩慢優雅 */
+    animation: gradientBG 20s ease infinite;
     
-    background-attachment: fixed;
     color: #333;
+}
+
+/* 記得保留這個動畫設定 */
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
         .container { max-width: 900px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 30px; }
