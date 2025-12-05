@@ -1,54 +1,46 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>高中營隊資訊公告板</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/128/9856/9856743.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
 
     <style>
         /* =========================================
-           1. 全域樣式與動態背景
+           1. 全域樣式
            ========================================= */
         body {
             font-family: "Microsoft JhengHei", "Heiti TC", Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-            /* 動態流光漸層背景 */
+            margin: 0; padding: 20px; min-height: 100vh;
             background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background-size: 400% 400%; animation: gradientBG 15s ease infinite;
             color: #333;
         }
-
         .container { max-width: 900px; margin: 0 auto; }
-        
         header { text-align: center; margin-bottom: 30px; }
         h1 { color: white; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .subtitle { color: rgba(255,255,255,0.95); font-size: 1em; letter-spacing: 1px; }
 
         /* =========================================
-           2. 搜尋欄與下拉選單 (修復版)
+           2. 搜尋欄與清除按鈕 (重點修改區)
            ========================================= */
         .search-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            position: relative;
-            z-index: 10; /* 確保選單在最上層 */
+            display: flex; justify-content: center; align-items: center;
+            gap: 15px; margin-bottom: 30px; position: relative; z-index: 10;
         }
 
+        /* 搜尋框外層 wrapper 需設為相對定位，以便讓叉叉絕對定位 */
         .search-box-wrapper {
-            flex-grow: 1;
-            max-width: 500px;
+            flex-grow: 1; max-width: 500px; position: relative;
         }
 
         #searchInput {
             width: 100%; box-sizing: border-box;
             padding: 14px 25px;
+            /* 右邊留多一點空間給叉叉，避免文字重疊 */
+            padding-right: 45px; 
             border: none; border-radius: 30px;
             font-size: 16px; outline: none; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -56,81 +48,59 @@
         }
         #searchInput:focus { box-shadow: 0 6px 20px rgba(0,0,0,0.2); transform: scale(1.01); }
 
-        /* 下拉選單容器 */
-        .dropdown { position: relative; display: inline-block; }
+        /* ★★★ 清除按鈕 (叉叉) 樣式 ★★★ */
+        .clear-btn {
+            position: absolute;
+            right: 15px; top: 50%;
+            transform: translateY(-50%); /* 垂直置中 */
+            font-size: 18px; color: #999;
+            cursor: pointer;
+            display: none; /* 預設隱藏，有文字才顯示 */
+            width: 24px; height: 24px;
+            text-align: center; line-height: 24px;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+        .clear-btn:hover { background-color: #f0f0f0; color: #555; }
 
-        /* 下拉按鈕 */
+        /* 下拉選單與按鈕 */
+        .dropdown { position: relative; display: inline-block; }
         .dropbtn {
-            background-color: white; color: #1a73e8;
-            padding: 14px 25px; font-size: 16px; font-weight: bold;
-            border: none; border-radius: 30px; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s; white-space: nowrap;
+            background-color: white; color: #1a73e8; padding: 14px 25px;
+            font-size: 16px; font-weight: bold; border: none; border-radius: 30px;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: all 0.3s;
+            white-space: nowrap;
         }
         .dropbtn:hover { background-color: #f8f9fa; transform: translateY(-2px); }
 
-        /* 下拉內容區塊 */
         .dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 100%; /* 位於按鈕正下方 */
-            margin-top: 10px; /* 與按鈕保持一點距離 */
-            background-color: white;
-            min-width: 200px;
-            box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
-            border-radius: 12px;
-            overflow: visible; /* 允許偽元素超出 */
-            z-index: 99;
-            animation: fadeInMenu 0.2s ease;
+            display: none; position: absolute; right: 0; top: 100%; margin-top: 10px;
+            background-color: white; min-width: 200px; box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
+            border-radius: 12px; overflow: visible; z-index: 99; animation: fadeInMenu 0.2s ease;
         }
-
-        /* ★★★ 關鍵修復：建立透明橋樑，防止滑鼠滑動時選單消失 ★★★ */
         .dropdown-content::before {
-            content: "";
-            position: absolute;
-            top: -20px; /* 往上延伸覆蓋 margin 的空隙 */
-            left: 0;
-            width: 100%;
-            height: 20px;
-            background: transparent; /* 透明 */
-            display: block;
+            content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px;
+            background: transparent; display: block;
         }
-
         .dropdown-content a {
-            color: #333; padding: 15px 20px;
-            text-decoration: none; display: block; font-size: 15px;
+            color: #333; padding: 15px 20px; text-decoration: none; display: block; font-size: 15px;
             border-bottom: 1px solid #f0f0f0; transition: 0.2s;
         }
         .dropdown-content a:first-child { border-radius: 12px 12px 0 0; }
         .dropdown-content a:last-child { border-bottom: none; border-radius: 0 0 12px 12px; }
         .dropdown-content a:hover { background-color: #e8f0fe; color: #1a73e8; padding-left: 25px; }
-
         .dropdown:hover .dropdown-content { display: block; }
 
         /* =========================================
-           3. 列表與卡片樣式 (寬敞版)
+           3. 列表與卡片
            ========================================= */
-        .camp-list { 
-            display: grid; 
-            gap: 25px; /* 卡片間距 */
-            min-height: 200px; 
-        }
-
+        .camp-list { display: grid; gap: 25px; min-height: 200px; }
         .card { 
-            background: rgba(255, 255, 255, 0.95);
-            padding: 25px; /* 內部空間 */
-            border-radius: 16px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-            cursor: pointer; transition: all 0.3s ease;
-            border-left: 6px solid #1a73e8;
-            
-            /* 初始隱藏，由 JS 控制延遲動畫 */
-            opacity: 0;
-            animation: fadeInUp 0.5s ease forwards;
+            background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s ease;
+            border-left: 6px solid #1a73e8; opacity: 0; animation: fadeInUp 0.5s ease forwards;
         }
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        
         .card-date { color: #e91e63; font-weight: bold; font-size: 0.9em; margin-bottom: 12px; letter-spacing: 0.5px; }
         .card-title { font-size: 1.3em; font-weight: bold; color: #222; line-height: 1.5; margin-bottom: 12px; }
         .card-preview { 
@@ -153,52 +123,42 @@
 
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 1000;
-            backdrop-filter: blur(3px); /* 背景模糊效果 */
+            background: rgba(0,0,0,0.6); z-index: 1000; backdrop-filter: blur(3px);
             justify-content: center; align-items: center;
         }
         .modal {
             background: white; width: 90%; max-width: 800px; max-height: 85vh;
-            border-radius: 20px; padding: 30px; overflow-y: auto;
-            position: relative; animation: slideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); /* 彈性動畫 */
+            border-radius: 20px; padding: 30px; overflow-y: auto; position: relative;
+            animation: slideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
 
-        /* 動畫關鍵影格 */
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes fadeInUp { from {opacity: 0; transform: translateY(30px);} to {opacity: 1; transform: translateY(0);} }
         @keyframes slideIn { from {transform: translateY(30px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
         @keyframes fadeInMenu { from {opacity: 0; transform: translateY(-10px);} to {opacity: 1; transform: translateY(0);} }
 
-        .modal-close { 
-            position: absolute; top: 20px; right: 25px; font-size: 30px; 
-            cursor: pointer; color: #aaa; transition: 0.2s; line-height: 1;
-        }
+        .modal-close { position: absolute; top: 20px; right: 25px; font-size: 30px; cursor: pointer; color: #aaa; transition: 0.2s; line-height: 1; }
         .modal-close:hover { color: #333; transform: rotate(90deg); }
-        
         .modal-title { font-size: 1.6em; color: #222; margin-bottom: 15px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-weight: bold; }
-        .modal-meta { color: #e91e63; font-weight: bold; margin-bottom: 20px; display: flex; align-items: center; gap: 5px; }
+        .modal-meta { color: #e91e63; font-weight: bold; margin-bottom: 20px; }
         .modal-content { line-height: 1.8; color: #444; white-space: pre-wrap; font-size: 1.05em; }
         
         .attach-section { margin-top: 30px; background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #eee; }
         .attach-title { font-weight: bold; color: #555; margin-bottom: 15px; display: block; }
         .attach-link { 
-            display: inline-flex; align-items: center; gap: 5px;
-            background: white; border: 1px solid #ddd; 
-            padding: 10px 16px; border-radius: 30px; text-decoration: none; 
-            color: #1a73e8; font-size: 0.95em; margin-right: 10px; margin-bottom: 10px;
-            transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 5px; background: white; border: 1px solid #ddd; 
+            padding: 10px 16px; border-radius: 30px; text-decoration: none; color: #1a73e8; font-size: 0.95em; 
+            margin-right: 10px; margin-bottom: 10px; transition: 0.2s;
         }
         .attach-link:hover { background: #1a73e8; color: white; border-color: #1a73e8; box-shadow: 0 4px 10px rgba(26,115,232,0.2); }
 
         .loading { text-align: center; color: white; padding: 60px; font-size: 1.2em; font-weight: bold; text-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .no-result { text-align: center; color: rgba(255,255,255,0.9); padding: 40px; display: none; font-size: 1.1em; }
-        
         .original-link-btn {
             display: block; width: 100%; text-align: center; margin-top: 25px;
-            background: linear-gradient(90deg, #1a73e8, #0d47a1); color: white; 
-            text-decoration: none; padding: 15px; border-radius: 12px; font-weight: bold;
-            transition: 0.3s; box-shadow: 0 4px 15px rgba(26,115,232,0.3);
+            background: linear-gradient(90deg, #1a73e8, #0d47a1); color: white; text-decoration: none; padding: 15px; 
+            border-radius: 12px; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 15px rgba(26,115,232,0.3);
         }
         .original-link-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,115,232,0.4); }
     </style>
@@ -213,14 +173,15 @@
 
     <div class="search-container">
         <div class="search-box-wrapper">
-            <input type="text" id="searchInput" placeholder="🔍 搜尋營隊名稱或內容..." onkeyup="filterData()">
+            <input type="text" id="searchInput" placeholder="🔍 搜尋營隊名稱或內容..." onkeyup="handleSearch()">
+            <span id="clearBtn" class="clear-btn" onclick="clearSearch()">✕</span>
         </div>
 
         <div class="dropdown">
             <button class="dropbtn">≡ 更多功能 ▾</button>
             <div class="dropdown-content">
                 <a href="#" target="_blank" id="lineBotLink">🤖 加入官方帳號</a>
-                </div>
+            </div>
         </div>
     </div>
 
@@ -237,34 +198,22 @@
         <div id="modalDate" class="modal-meta"></div>
         <div id="modalTitle" class="modal-title"></div>
         <div id="modalContent" class="modal-content"></div>
-        
         <div id="attachSection" class="attach-section" style="display:none;">
             <span class="attach-title">📎 相關附件下載：</span>
             <div id="modalAttachments"></div>
         </div>
-
         <a id="modalLink" href="#" target="_blank" class="original-link-btn">前往原始公告頁面 ↗</a>
     </div>
 </div>
 
 <script>
-    // ===============================================
-    // ★★★ 設定區 (請修改這裡) ★★★
-    // ===============================================
-    
-    // 1. 請填入您的 Google Apps Script 部署網址
+   
     const API_URL = "https://script.google.com/macros/s/AKfycbxNOG_cxSIFr7RKC5mlb8wGpKBmUrTPMFv4QqNy0hxWj9X5deMX3V7NBt7mwoI_5V0S/exec"; 
-
-    // 2. 請填入 LINE Bot ID
-    const LINE_BOT_ID = "@087ptzrl"; 
-
-    // ===============================================
-
-    // 初始化 LINE 連結
+    const LINE_BOT_ID = "@087ptzrl";
+ 
+  
     document.addEventListener("DOMContentLoaded", function() {
-        if (LINE_BOT_ID) {
-            document.getElementById('lineBotLink').href = "https://line.me/R/ti/p/" + LINE_BOT_ID;
-        }
+        if (LINE_BOT_ID) document.getElementById('lineBotLink').href = "https://line.me/R/ti/p/" + LINE_BOT_ID;
     });
 
     let allCamps = [];       
@@ -272,12 +221,11 @@
     let currentPage = 1;     
     const itemsPerPage = 15; 
 
-    // 取得資料
     fetch(API_URL)
         .then(response => response.json())
         .then(data => {
             document.getElementById('loading').style.display = 'none';
-            allCamps = data.reverse(); // 最新的排前面
+            allCamps = data.reverse(); 
             filteredCamps = allCamps; 
             renderPage(1); 
         })
@@ -286,9 +234,16 @@
             console.error(error);
         });
 
-    // 搜尋過濾
-    function filterData() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+    // --- ★★★ 新增：搜尋處理函式 ★★★ ---
+    function handleSearch() {
+        const input = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const keyword = input.value.toLowerCase().trim();
+
+        // 控制叉叉顯示/隱藏
+        clearBtn.style.display = keyword.length > 0 ? 'block' : 'none';
+
+        // 執行篩選
         filteredCamps = allCamps.filter(camp => {
             const titleMatch = camp.title.toLowerCase().includes(keyword);
             const contentMatch = camp.content && camp.content.toLowerCase().includes(keyword);
@@ -297,7 +252,20 @@
         renderPage(1);
     }
 
-    // 渲染頁面 (含卡片浮現動畫)
+    // --- ★★★ 新增：清除搜尋函式 ★★★ ---
+    function clearSearch() {
+        const input = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearBtn');
+        
+        input.value = ''; // 清空輸入框
+        clearBtn.style.display = 'none'; // 隱藏叉叉
+        input.focus(); // 讓游標回到輸入框
+        
+        // 恢復顯示全部資料
+        filteredCamps = allCamps;
+        renderPage(1);
+    }
+
     function renderPage(page) {
         currentPage = page;
         const listContainer = document.getElementById('campList');
@@ -322,7 +290,6 @@
 
             const card = document.createElement('div');
             card.className = 'card';
-            // 設定延遲動畫：每張卡片比上一張晚 0.05 秒出現
             card.style.animationDelay = `${index * 0.05}s`;
 
             card.innerHTML = `
@@ -338,7 +305,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 生成分頁按鈕
     function renderPagination() {
         const paginationContainer = document.getElementById('pagination');
         paginationContainer.innerHTML = '';
@@ -355,10 +321,8 @@
             return btn;
         };
 
-        // 上一頁
         paginationContainer.appendChild(createBtn('«', () => renderPage(currentPage - 1), currentPage === 1));
 
-        // 頁碼邏輯 (最多顯示 5 個)
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPages, startPage + 4);
         if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
@@ -367,11 +331,9 @@
             paginationContainer.appendChild(createBtn(i, () => renderPage(i), false, i === currentPage));
         }
 
-        // 下一頁
         paginationContainer.appendChild(createBtn('»', () => renderPage(currentPage + 1), currentPage === totalPages));
     }
 
-    // 開啟彈窗
     function openModal(camp) {
         let dateStr = camp.date ? String(camp.date).substring(0, 10) : '';
         if (dateStr.includes('T')) dateStr = dateStr.split('T')[0];
@@ -385,12 +347,10 @@
         const attachSection = document.getElementById('attachSection');
         attachContainer.innerHTML = '';
         
-        // 處理附件顯示
         if (camp.attachments && camp.attachments.trim() !== "" && camp.attachments !== "無附件") {
             attachSection.style.display = 'block';
             let files = camp.attachments.split('\n');
             files.forEach((fileUrl, index) => {
-                // 嘗試解析檔名
                 let fileName = "附件下載 " + (index + 1);
                 try { 
                     const urlObj = new URL(fileUrl);
@@ -398,9 +358,7 @@
                 } catch(e){}
                 
                 let a = document.createElement('a');
-                a.href = fileUrl;
-                a.target = "_blank";
-                a.className = "attach-link";
+                a.href = fileUrl; a.target = "_blank"; a.className = "attach-link";
                 a.innerHTML = "📄 " + fileName;
                 attachContainer.appendChild(a);
             });
