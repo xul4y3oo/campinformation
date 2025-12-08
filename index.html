@@ -13,18 +13,29 @@
         /* =========================================
            1. 全域樣式
            ========================================= */
-        body {
-    font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-    margin: 0; padding: 20px; min-height: 100vh;
+    body {
+        font-family: "Microsoft JhengHei", "Heiti TC", Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        color: #333;
+
+        /* ★★★ 背景圖片設定 ★★★ */
+        /* 把括號裡的網址換成您喜歡的圖片連結 */
+        background-image: url('https://images.pexels.com/photos/531880/pexels-photo-531880.jpeg');
     
-    /* 背景色：淡紫配淡藍，像極光一樣 */
-    background-color: #e0c3fc;
-    background-image: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
+        /* 讓圖片填滿整個螢幕，不要變形 */
+        background-size: cover;
     
-    /* 讓背景固定，卡片滑動時背景不動，更有質感 */
-    background-attachment: fixed;
-    color: #333;
-}
+        /* 讓圖片置中 */
+        background-position: center;
+    
+        /* 關鍵：讓背景固定不動，只有內容會滑動 (非常有質感！) */
+        background-attachment: fixed;
+        
+        /* 防止圖片重複排列 */
+        background-repeat: no-repeat;
+    }
 
 /* 記得保留這個動畫設定 */
 @keyframes gradientBG {
