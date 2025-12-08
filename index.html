@@ -169,7 +169,49 @@
         .attach-link:hover { background: #1a73e8; color: white; border-color: #1a73e8; box-shadow: 0 4px 10px rgba(26,115,232,0.2); }
 
         .loading { text-align: center; color: white; padding: 60px; font-size: 1.2em; font-weight: bold; text-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .no-result { text-align: center; color: rgba(255,255,255,0.9); padding: 40px; display: none; font-size: 1.1em; }
+        
+        /* --- 無資料提示 (Empty State) --- */
+    .no-result {
+        text-align: center;
+        padding: 60px 20px;
+        display: none; /* 預設隱藏，由 JS 控制顯示 */
+    
+        /* 讓圖片與文字稍微浮起來的動畫 */
+        animation: fadeIn 0.5s ease;
+    }
+
+    .no-result img {
+        width: 150px; /* 設定圖片寬度，不要太大 */
+        height: 150px;
+        margin-bottom: 20px; /* 圖片跟文字的距離 */
+        opacity: 0.9;
+    
+        /* 給圖片一點輕微的浮動效果 */
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .no-result p {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: white; /* 配合您的深色/漸層背景，文字用白色 */
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .no-result .sub-text {
+        display: block;
+        margin-top: 10px;
+        font-size: 0.95em;
+        color: rgba(255, 255, 255, 0.8); /* 次要文字稍微透明 */
+    }
+
+    /* 輕微浮動動畫定義 */
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+        
         .original-link-btn {
             display: block; width: 100%; text-align: center; margin-top: 25px;
             background: linear-gradient(90deg, #1a73e8, #0d47a1); color: white; text-decoration: none; padding: 15px; 
@@ -228,7 +270,11 @@
     </div>
 
     <div id="loading" class="loading">正在載入最新營隊資訊...</div>
-    <div id="noResult" class="no-result">😕 沒有找到符合的資料，請嘗試其他關鍵字。</div>
+    <div id="noResult" class="no-result">
+        <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt="查無資料">
+        <p>😕 哎呀！沒有找到符合的營隊...</p>
+        <span class="sub-text">試試看搜尋「冬令營」或縮短關鍵字？</span>
+    </div>
     
     <div id="campList" class="camp-list"></div>
     <div id="pagination" class="pagination"></div>
