@@ -176,6 +176,33 @@
             border-radius: 12px; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 15px rgba(26,115,232,0.3);
         }
         .original-link-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,115,232,0.4); }
+        /* =========================================
+       5. 頁尾版權宣告 (Footer)
+       ========================================= */
+    .site-footer {
+        text-align: center;
+        padding: 40px 20px 20px; /* 上留多一點空隙 */
+        margin-top: 30px;
+        color: rgba(255, 255, 255, 0.85); /* 微微透明的白色，適合彩色背景 */
+        font-size: 0.85em;
+        letter-spacing: 0.5px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1); /* 增加一點陰影讓文字更清楚 */
+        border-top: 1px solid rgba(255, 255, 255, 0.2); /* 加一條淡淡的分隔線 */
+        width: 100%;
+    }
+
+    .site-footer a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        border-bottom: 1px dotted rgba(255,255,255,0.5);
+        transition: 0.2s;
+    }
+
+    .site-footer a:hover {
+        border-bottom: 1px solid white;
+        opacity: 1;
+    }
     </style>
 </head>
 <body>
@@ -220,6 +247,21 @@
         <a id="modalLink" href="#" target="_blank" class="original-link-btn">前往原始公告頁面 ↗</a>
     </div>
 </div>
+
+<footer class="site-footer">
+    <div class="copyright">
+        &copy; <span id="year"></span> <strong>梓翔股份有限公司</strong>. All rights reserved.
+    </div>
+    <div style="margin-top: 5px; font-size: 0.9em;">
+        Designed with ❤️ for Students
+    </div>
+</footer>
+
+<script>
+    document.getElementById('year').innerText = new Date().getFullYear();
+</script>
+
+</body> </html>
 
 <script>
    
