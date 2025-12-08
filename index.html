@@ -244,6 +244,31 @@
         border-bottom: 1px solid white;
         opacity: 1;
     }
+        /* =========================================
+   6. 滑鼠點擊特效 (水波紋)
+   ========================================= */
+    .click-ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.6); /* 白色的光暈，半透明 */
+        transform: translate(-50%, -50%); /* 讓圓心對準滑鼠游標 */
+        pointer-events: none; /* 關鍵：讓滑鼠可以穿透它點擊下方的連結 */
+        animation: ripple-anim 0.6s linear forwards;
+        z-index: 9999; /* 確保在最上層 */
+    }
+
+    @keyframes ripple-anim {
+        0% {
+            width: 0;
+            height: 0;
+            opacity: 0.8;
+        }
+        100% {
+            width: 150px; /* 擴散的大小 */
+            height: 150px;
+            opacity: 0; /* 最後完全消失 */
+        }
+    }
     </style>
 </head>
 <body>
@@ -472,6 +497,33 @@
 
     function closeModal(event) { if (event.target.id === 'modalOverlay') document.getElementById('modalOverlay').style.display = 'none'; }
     function closeModalBtn() { document.getElementById('modalOverlay').style.display = 'none'; }
+    // ===============================================
+    // ★★★ 滑鼠點擊特效偵測 ★★★
+    // ===============================================
+    document.addEventListener('click', function(e) {
+        // 1. 創建一個 div 元素
+        const ripple = document.createElement('div');
+        
+        // 2. 加入 CSS class
+        ripple.classList.add('click-ripple');
+        
+        // 3. 設定位置 (抓取滑鼠當下的 X, Y 座標)
+        // 考慮到網頁捲動，使用 pageX / pageY
+        ripple.style.left = e.pageX + 'px';
+        ripple.style.top = e.pageY + 'px';
+        
+        // 4. 隨機顏色 (選用功能)
+        // 如果您希望波紋是彩色的，可以把下面這行註解打開
+        // ripple.style.background = `hsl(${Math.random() * 360}, 70%, 80%)`;
+
+        // 5. 放到網頁上
+        document.body.appendChild(ripple);
+        
+        // 6. 動畫結束後 (0.6秒) 自動刪除元素，避免網頁變慢
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    });
 </script>
 
 </body>
