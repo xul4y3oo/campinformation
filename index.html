@@ -12,16 +12,15 @@
 
     <style>
         /* =========================================
-           1. 全域變數與重置 (加入暗黑模式變數)
+           1. 全域變數與重置 (YouTube 風格配色)
            ========================================= */
         :root {
-            /* 品牌色 (保持不變) */
+            /* 品牌色 */
             --primary-green: #6fb7b7;
             --primary-blue: #6cacd6;
             --primary-pink: #f78da7;
             --primary-orange: #f4a460;
             --primary-yellow: #f0d676;
-            --footer-yellow: #ffcc33;
 
             /* 預設 (亮色模式) */
             --bg-body: #f9f9f9;
@@ -32,25 +31,26 @@
             --text-muted: #888888;
             --border-color: #eeeeee;
             --shadow-color: rgba(0,0,0,0.05);
-            --ripple-color: rgba(111, 183, 183, 0.4);
+            --footer-bg: #ffcc33;
+            --footer-text: #555;
 
-            /* 水波紋大小 (預設小) */
+            /* 水波紋預設 */
             --ripple-size: 150px; 
             --ripple-duration: 0.6s;
         }
 
-        /* 暗黑模式變數覆蓋 */
+        /* ★★★ YouTube 風格暗黑模式 ★★★ */
         body.dark-mode {
-            --bg-body: #121212;
-            --bg-card: #1e1e1e;
-            --bg-header: #1e1e1e;
-            --text-main: #dddddd;
-            --text-title: #ffffff;
-            --text-muted: #aaaaaa;
-            --border-color: #333333;
+            --bg-body: #0f0f0f;      /* YouTube 背景深灰 */
+            --bg-card: #272727;      /* YouTube 卡片灰 */
+            --bg-header: #0f0f0f;    /* Header 與背景融合 */
+            --text-main: #f1f1f1;    /* 柔和白 */
+            --text-title: #ffffff;   /* 亮白 */
+            --text-muted: #aaaaaa;   /* 淺灰 */
+            --border-color: #3f3f3f; /* 深色邊框 */
             --shadow-color: rgba(0,0,0,0.5);
-            --footer-yellow: #b38f00; /* 變暗一點 */
-            --ripple-color: rgba(111, 183, 183, 0.2); /* 暗色背景下波紋淡一點 */
+            --footer-bg: #3e3e3e;    /* Footer 變深灰 */
+            --footer-text: #ccc;
         }
 
         body {
@@ -68,32 +68,45 @@
         ul { list-style: none; padding: 0; margin: 0; }
 
         /* =========================================
-           2. 動畫特效 (水波紋邏輯更新)
+           2. 動畫特效 (彩花 + 水波紋)
            ========================================= */
+        /* 水波紋 */
         .click-ripple {
             position: absolute; border-radius: 50%;
-            background: var(--ripple-color);
+            /* 這裡的背景色會由 JS 動態控制 (神祕模式時變彩色) */
             transform: translate(-50%, -50%); pointer-events: none;
             animation: ripple-anim var(--ripple-duration) linear forwards; 
             z-index: 9999;
         }
-
         @keyframes ripple-anim { 
-            0% { width: 0; height: 0; opacity: 0.8; } 
+            0% { width: 0; height: 0; opacity: 0.6; } 
             100% { width: var(--ripple-size); height: var(--ripple-size); opacity: 0; } 
         }
 
+        /* 彩花 (Confetti) */
+        .confetti {
+            position: absolute; width: 8px; height: 8px; 
+            background-color: var(--confetti-color);
+            pointer-events: none; z-index: 10000;
+            animation: confetti-fall 1s ease-out forwards;
+        }
+        @keyframes confetti-fall {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) rotate(720deg); opacity: 0; }
+        }
+
+        /* 吉祥物浮動 */
         @keyframes floatImg { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
 
         /* =========================================
            3. 介面樣式
            ========================================= */
-        /* Header: 使用 Space-between 將 Logo 和 設定按鈕分開 */
         .site-header { 
             background: var(--bg-header); 
             box-shadow: 0 2px 10px var(--shadow-color); 
             padding: 15px 0; position: sticky; top: 0; z-index: 100; 
             transition: background 0.3s;
+            border-bottom: 1px solid var(--border-color); /* 增加分隔線感 */
         }
         .header-container { 
             max-width: 1200px; margin: 0 auto; padding: 0 20px; 
@@ -103,18 +116,18 @@
         .logo-area { display: flex; align-items: center; gap: 10px; font-size: 1.5em; font-weight: bold; color: var(--primary-green); cursor: pointer; }
         .logo-icon { font-size: 32px; }
 
-        /* 設定按鈕樣式 */
+        /* 設定按鈕 */
         .settings-btn {
             font-size: 28px; color: var(--text-muted); cursor: pointer; 
             transition: 0.3s; padding: 5px; border-radius: 50%;
         }
         .settings-btn:hover { background: var(--border-color); color: var(--primary-green); transform: rotate(90deg); }
 
-        /* --- 設定小視窗 (Settings Modal) --- */
+        /* 設定面板 */
         .settings-panel {
             position: fixed; top: 70px; right: 20px;
             background: var(--bg-card); width: 280px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
             border-radius: 12px; padding: 20px;
             z-index: 2000; border: 1px solid var(--border-color);
             display: none; animation: slideIn 0.3s ease;
@@ -129,15 +142,15 @@
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .setting-label { font-size: 0.95em; color: var(--text-main); }
         
-        /* 開關樣式 (Toggle Switch) */
+        /* Switch 開關 */
         .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--primary-green); }
         input:checked + .slider:before { transform: translateX(24px); }
 
-        /* --- 特色展示區 --- */
+        /* 特色區 */
         .hero-section {
             max-width: 1200px; margin: 30px auto 10px; padding: 0 20px;
             display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;
@@ -159,7 +172,7 @@
         .bg-orange { background: linear-gradient(135deg, #ffb870, #d68a40); }
         .bg-yellow { background: linear-gradient(135deg, #ffe066, #d6c040); }
 
-        /* --- 搜尋區 --- */
+        /* 搜尋區 */
         .search-section { max-width: 1000px; margin: 50px auto; padding: 0 20px; position: relative; }
         .mascot { position: absolute; top: -45px; left: 40px; font-size: 50px; color: var(--text-title); animation: floatImg 3s ease-in-out infinite; }
         
@@ -192,7 +205,7 @@
         .more-options { position: absolute; right: 40px; top: -40px; }
         .dropbtn { background: var(--bg-card); color: var(--primary-green); border: 1px solid var(--primary-green); padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9em; }
 
-        /* --- 內容列表 --- */
+        /* 內容與卡片 */
         .main-content { max-width: 1200px; margin: 0 auto 60px; padding: 0 20px; flex: 1; }
         .section-header { display: flex; align-items: center; margin-bottom: 20px; border-left: 5px solid var(--primary-orange); padding-left: 15px; }
         .section-title { font-size: 1.5em; font-weight: bold; color: var(--text-title); }
@@ -219,13 +232,13 @@
         .card-preview { color: var(--text-muted); font-size: 0.9em; display: flex; align-items: center; gap: 5px; }
         @keyframes fadeInCard { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- Footer & Pagination --- */
-        .site-footer { background-color: var(--footer-yellow); color: #555; text-align: center; padding: 20px; font-size: 0.9em; font-weight: bold; transition: 0.3s; }
+        /* 頁尾 */
+        .site-footer { background-color: var(--footer-bg); color: var(--footer-text); text-align: center; padding: 20px; font-size: 0.9em; font-weight: bold; transition: 0.3s; }
         .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 40px; }
         .page-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 14px; border-radius: 6px; cursor: pointer; }
         .page-btn.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
 
-        /* --- Modal --- */
+        /* 彈窗 Modal */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; backdrop-filter: blur(2px); justify-content: center; align-items: center; }
         .modal { background: var(--bg-card); width: 90%; max-width: 800px; max-height: 85vh; border-radius: 20px; padding: 30px; overflow-y: auto; position: relative; animation: slideUp 0.3s ease; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -264,7 +277,7 @@
         </div>
 
         <div class="setting-item">
-            <span class="setting-label">✨ 神祕按鈕 (特效)</span>
+            <span class="setting-label">✨ 神祕彩花模式</span>
             <label class="switch">
                 <input type="checkbox" id="mysteryToggle" onchange="toggleMystery()">
                 <span class="slider"></span>
@@ -272,7 +285,7 @@
         </div>
         
         <div style="margin-top: 10px; font-size: 0.8em; color: var(--text-muted); text-align: center;">
-            <i class="ph ph-info"></i> 神祕按鈕開啟後，點擊畫面會有驚喜！
+            <i class="ph ph-confetti"></i> 開啟神祕模式，點擊畫面享受彩花派對！
         </div>
     </div>
 
@@ -361,7 +374,8 @@
     const LINE_BOT_ID = "@087ptzrl";
     // ===============================================
 
-    // --- 網站設定功能 ---
+    let isMysteryMode = false;
+
     function toggleSettings() {
         const panel = document.getElementById('settingsPanel');
         panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
@@ -372,36 +386,80 @@
     }
 
     function toggleMystery() {
-        const isMystery = document.getElementById('mysteryToggle').checked;
+        isMysteryMode = document.getElementById('mysteryToggle').checked;
         const root = document.documentElement;
-        if(isMystery) {
-            // 開啟神祕模式：波紋變成超級大 (300vmax 代表視窗最大邊的 3倍)
+        if(isMysteryMode) {
+            // 開啟神祕模式：波紋超大 + 時間拉長
             root.style.setProperty('--ripple-size', '300vmax');
-            root.style.setProperty('--ripple-duration', '1.5s'); // 時間拉長一點比較有感
+            root.style.setProperty('--ripple-duration', '1.5s');
         } else {
-            // 回復正常
+            // 恢復正常
             root.style.setProperty('--ripple-size', '150px');
             root.style.setProperty('--ripple-duration', '0.6s');
         }
     }
 
-    // 滑鼠特效
+    // ★★★ 點擊特效邏輯 (水波紋 + 彩花) ★★★
     document.addEventListener('click', function(e) {
-        // 如果點擊的是設定面板內部，不產生波紋，避免視覺干擾
+        // 避開設定面板的點擊干擾
         if(e.target.closest('.settings-panel') || e.target.closest('.settings-btn')) return;
 
+        // 1. 產生水波紋
         const ripple = document.createElement('div');
         ripple.classList.add('click-ripple');
         ripple.style.left = e.pageX + 'px';
         ripple.style.top = e.pageY + 'px';
+
+        if(isMysteryMode) {
+            // 神祕模式：隨機彩虹顏色
+            const randomHue = Math.floor(Math.random() * 360);
+            ripple.style.background = `radial-gradient(circle, hsla(${randomHue}, 100%, 70%, 0.8) 0%, hsla(${randomHue}, 100%, 50%, 0.1) 70%)`;
+            
+            // 2. 觸發彩花特效 (只有在神祕模式下)
+            createConfetti(e.pageX, e.pageY);
+        } else {
+            // 一般模式：固定顏色 (配合暗/亮色模式微調透明度)
+            // 這裡直接使用 CSS 變數中的顏色比較麻煩，用簡單的半透明綠色即可，或讀取變數
+            ripple.style.background = getComputedStyle(document.body).getPropertyValue('--primary-green') + "66"; // 加66變半透明
+        }
+
         document.body.appendChild(ripple);
         
-        // 根據目前的 duration 決定何時移除
-        const duration = getComputedStyle(document.documentElement).getPropertyValue('--ripple-duration');
-        const time = parseFloat(duration) * 1000;
-        
-        setTimeout(() => { ripple.remove(); }, time);
+        const durationStr = getComputedStyle(document.documentElement).getPropertyValue('--ripple-duration');
+        const duration = parseFloat(durationStr) * 1000;
+        setTimeout(() => { ripple.remove(); }, duration);
     });
+
+    // 產生彩花函數
+    function createConfetti(x, y) {
+        const particleCount = 30; // 紙花數量
+        for (let i = 0; i < particleCount; i++) {
+            const confetti = document.createElement('div');
+            confetti.classList.add('confetti');
+            
+            // 隨機顏色
+            const colors = ['#f94144', '#f3722c', '#f8961e', '#f9c74f', '#90be6d', '#43aa8b', '#577590', '#277da1'];
+            confetti.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]);
+
+            // 隨機噴射方向與距離
+            // tx: X軸位移, ty: Y軸位移 (加點正值讓它看起來像受重力往下掉)
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = 50 + Math.random() * 100; // 擴散半徑
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity + 100; // +100 模擬重力下墜
+
+            confetti.style.setProperty('--tx', `${tx}px`);
+            confetti.style.setProperty('--ty', `${ty}px`);
+            
+            confetti.style.left = x + 'px';
+            confetti.style.top = y + 'px';
+            
+            document.body.appendChild(confetti);
+
+            // 動畫結束後移除
+            setTimeout(() => { confetti.remove(); }, 1000);
+        }
+    }
 
     document.getElementById('year').innerText = new Date().getFullYear();
     if(LINE_BOT_ID) document.getElementById('lineBotLink').href = "https://line.me/R/ti/p/" + LINE_BOT_ID;
