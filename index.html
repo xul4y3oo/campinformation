@@ -502,20 +502,21 @@
         const icon = iconContainer.querySelector('i');
 
         if (idx === -1) {
+            // 加入收藏
             favorites.push(link);
-            // 變實心
-            iconContainer.classList.add('active');
-            icon.classList.remove('ph-heart');
-            icon.classList.add('ph-heart-fill');
+            iconContainer.classList.add('active'); // 讓顏色變紅
+            // 強制設定為實心愛心
+            icon.className = "ph-fill ph-heart";
         } else {
+            // 取消收藏
             favorites.splice(idx, 1);
-            // 變空心
-            iconContainer.classList.remove('active');
-            icon.classList.remove('ph-heart-fill');
-            icon.classList.add('ph-heart');
+            iconContainer.classList.remove('active'); // 移除紅色
+            // 強制設定為空心愛心
+            icon.className = "ph ph-heart";
         }
         localStorage.setItem('camp_favorites', JSON.stringify(favorites));
         
+        // 如果目前正在「只看收藏」模式，且取消了收藏，刷新頁面移除該項目
         if(isFavOnly && idx !== -1) applyFilters(); 
     }
 
