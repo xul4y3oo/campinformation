@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>高中營隊資訊平台</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/128/18932/18932701.png">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/128/18932/18932701.png">/svg>">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -119,7 +119,7 @@
         .dropbtn { background: white; color: var(--primary-green); border: 1px solid var(--primary-green); padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9em; }
 
         /* =========================================
-           4. 內容與卡片
+           4. 內容與卡片 (★ 修改處：強制欄位排版)
            ========================================= */
         .main-content { max-width: 1200px; margin: 0 auto 60px; padding: 0 20px; flex: 1; }
         .section-header { display: flex; align-items: center; margin-bottom: 20px; border-left: 5px solid var(--primary-orange); padding-left: 15px; }
@@ -130,8 +130,25 @@
         .no-result p { font-size: 1.2em; font-weight: bold; color: #666; }
 
         .loading { text-align: center; padding: 50px; color: #999; width: 100%; }
-        .camp-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+        /* ★★★ 這裡做了修改，讓排版更穩定 ★★★ */
+        .camp-list { 
+            display: grid; 
+            gap: 20px; 
+            /* 預設 (手機): 1 欄 */
+            grid-template-columns: 1fr; 
+        }
         
+        /* 平板 (大於 600px): 2 欄 */
+        @media (min-width: 600px) {
+            .camp-list { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* 電腦 (大於 900px): 強制 3 欄 */
+        @media (min-width: 900px) {
+            .camp-list { grid-template-columns: repeat(3, 1fr); }
+        }
+
         .card {
             background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             border: 1px solid #eee; cursor: pointer; transition: all 0.3s;
@@ -235,7 +252,7 @@
     </main>
 
     <footer class="site-footer">
-        我們使用 廖梓翔 來提供服務。© <span id="year"></span> 梓翔股份有限公司. All rights reserved.
+        我們使用 Cookie 來提供服務。© <span id="year"></span> 梓翔股份有限公司. All rights reserved.
     </footer>
 
     <div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
