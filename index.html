@@ -282,8 +282,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2; transform: rotate(-5deg);
         }
 
-        /* 移除愛心樣式 */
-
         .card-meta { margin-bottom: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
         .card-date, .card-region { 
             display: inline-block; background-color: var(--border-color); 
@@ -464,6 +462,7 @@
     let currentRegion = 'all'; // 目前選擇的地區
     let isMysteryMode = false;
     let currentModalCamp = null;
+    let latestPostDate = null; // 儲存最新的日期
 
     // 初始化
     document.getElementById('year').innerText = new Date().getFullYear();
@@ -472,8 +471,21 @@
     fetch(API_URL).then(res => res.json()).then(data => {
         document.getElementById('loading').style.display = 'none';
         allCamps = data.reverse(); 
+
+        // ★ 找出最新的那一筆資料日期 (作為 NEW 的基準)
+        if (allCamps.length > 0) {
+            let maxDate = new Date(0);
+            allCamps.forEach(c => {
+                let dStr = c.date ? String(c.date).substring(0, 10) : '';
+                if(dStr) {
+                    let d = new Date(dStr);
+                    if(d > maxDate) maxDate = d;
+                }
+            });
+            latestPostDate = maxDate;
+        }
         
-        // ★★★ 強制前端重新分類 ★★★
+        // ★ 強制前端重新分類
         allCamps.forEach(camp => {
             camp.region = autoClassifyRegion(camp.title, camp.content);
         });
@@ -535,8 +547,8 @@
         }
 
         // C. 日期篩選與排序
-        const today = new Date();
         if (sortType === 'month') {
+            const today = new Date();
             const oneMonthAgo = new Date();
             oneMonthAgo.setDate(today.getDate() - 30);
             temp = temp.filter(c => {
@@ -581,15 +593,19 @@
         noRes.style.display = 'none';
         const start = (page - 1) * itemsPerPage;
         const items = filteredCamps.slice(start, start + itemsPerPage);
-        const today = new Date();
 
         items.forEach((camp, idx) => {
             let dStr = camp.date ? String(camp.date).substring(0, 10) : '';
             if(dStr.includes('T')) dStr = dStr.split('T')[0];
             
-            const campDate = new Date(dStr);
-            const diffDays = Math.ceil(Math.abs(today - campDate) / (1000 * 60 * 60 * 24)); 
-            const isNew = diffDays <= 14;
+            // ★ 修改 NEW 判斷邏輯：以資料庫中最新日期為基準，7天內都算 NEW
+            let isNew = false;
+            if (latestPostDate && dStr) {
+                const campDate = new Date(dStr);
+                const diffTime = Math.abs(latestPostDate - campDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                if (diffDays <= 7) isNew = true;
+            }
 
             const isRead = readHistory.includes(camp.link);
             
@@ -597,7 +613,6 @@
             card.className = `card ${isRead ? 'read' : ''}`;
             card.style.animationDelay = `${idx * 0.05}s`;
 
-            // 已移除愛心 click 事件
             card.onclick = (e) => { openModal(camp); };
 
             const regionLabel = camp.region || '未分類';
