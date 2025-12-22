@@ -195,7 +195,7 @@
         }
         .search-btn:hover { background-color: #5a6268; }
 
-        /* --- 新增：地區篩選工具列 --- */
+        /* 地區篩選工具列 */
         .region-toolbar {
             display: flex;
             gap: 10px;
@@ -231,21 +231,9 @@
             box-shadow: 0 4px 10px rgba(111, 183, 183, 0.4);
         }
 
-        /* --- 工具列 (下方排序與收藏) --- */
+        /* 工具列 (排序) - 移除收藏 */
         .toolbar { display: flex;
             gap: 10px; margin-top: 15px; justify-content: flex-end; align-items: center; flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-            cursor: pointer;
-            padding: 8px 16px; border-radius: 20px; background: var(--bg-card);
-            border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.9em;
-            display: flex; align-items: center;
-            gap: 6px; transition: 0.2s; user-select: none;
-        }
-        .filter-btn:hover, .filter-btn.active { border-color: var(--primary-pink);
-            color: var(--primary-pink); }
-        .filter-btn.active { background: rgba(247, 141, 167, 0.1); font-weight: bold;
         }
         
         /* 美化版下拉選單 */
@@ -294,13 +282,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2; transform: rotate(-5deg);
         }
 
-        .card-heart {
-            position: absolute;
-            top: 15px; right: 15px; font-size: 24px; color: #ccc; z-index: 5;
-            transition: transform 0.2s, color 0.2s;
-        }
-        .card-heart:hover { transform: scale(1.2); }
-        .card-heart.active { color: #ff4757; }
+        /* 移除愛心樣式 */
 
         .card-meta { margin-bottom: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
         .card-date, .card-region { 
@@ -421,10 +403,6 @@
         </div>
 
         <div class="toolbar">
-            <div class="filter-btn" id="favFilterBtn" onclick="toggleFavFilter()">
-                <i class="ph ph-heart"></i> 只看收藏
-            </div>
-            
             <div class="select-wrapper">
                 <select class="sort-select" id="sortSelect" onchange="handleSort()">
                     <option value="newest">📅 日期：由新到舊</option>
@@ -476,17 +454,14 @@
     // ===============================================
     // ★★★ 設定區 ★★★
     // ===============================================
-    // 注意：這個 URL 必須是您已發布的 GAS 網頁應用程式 URL
     const API_URL = "https://script.google.com/macros/s/AKfycbxNOG_cxSIFr7RKC5mlb8wGpKBmUrTPMFv4QqNy0hxWj9X5deMX3V7NBt7mwoI_5V0S/exec";
     const LINE_BOT_ID = "@087ptzrl";
     // ===============================================
 
     let allCamps = [], filteredCamps = [], currentPage = 1;
     const itemsPerPage = 12; 
-    let favorites = JSON.parse(localStorage.getItem('camp_favorites')) || [];
     let readHistory = JSON.parse(localStorage.getItem('camp_read')) || [];
-    let isFavOnly = false;
-    let currentRegion = 'all'; // ★ 新增：目前選擇的地區
+    let currentRegion = 'all'; // 目前選擇的地區
     let isMysteryMode = false;
     let currentModalCamp = null;
 
@@ -497,13 +472,51 @@
     fetch(API_URL).then(res => res.json()).then(data => {
         document.getElementById('loading').style.display = 'none';
         allCamps = data.reverse(); 
+        
+        // ★★★ 強制前端重新分類 ★★★
+        allCamps.forEach(camp => {
+            camp.region = autoClassifyRegion(camp.title, camp.content);
+        });
+
         applyFilters(); 
     }).catch(e => { console.error(e); });
 
-    // ★ 新增：設定地區篩選
+    // ★★★ 強大的自動分類函式 ★★★
+    function autoClassifyRegion(title, content) {
+        const fullText = (title + " " + content).toLowerCase();
+        
+        // 1. 北區 (包含縣市與大學)
+        const northKeywords = [
+            "基隆", "台北", "臺北", "新北", "桃園", "新竹", "宜蘭",
+            "台大", "臺大", "政大", "師大", "陽明", "交大", "清華", "中央", "輔仁", "淡江", "北科", "台科", "文化大學", "銘傳", "實踐", "世新", "北醫", "國北教", "市北教", "馬偕", "長庚"
+        ];
+        // 2. 中區
+        const centralKeywords = [
+            "苗栗", "台中", "臺中", "彰化", "南投", "雲林", "西螺", "農工", "正心",
+            "中興", "東海", "逢甲", "靜宜", "暨南", "彰師", "雲科", "虎尾", "勤益", "朝陽", "亞洲", "中山醫", "中國醫", "聯大"
+        ];
+        // 3. 南區
+        const southKeywords = [
+            "嘉義", "台南", "臺南", "高雄", "屏東", 
+            "成大", "中山大學", "中正", "高師", "高醫", "義守", "屏科", "嘉大", "南台", "崑山", "高科", "文藻", "樹德", "海科"
+        ];
+        // 4. 東區
+        const eastKeywords = ["花蓮", "台東", "臺東", "東華", "慈濟", "台東大學"];
+        // 5. 外島
+        const islandKeywords = ["澎湖", "金門", "馬祖"];
+
+        // 優先順序：標題 > 內容 (但這裡直接搜全文)
+        for(let k of northKeywords) if(fullText.includes(k.toLowerCase())) return "北區";
+        for(let k of centralKeywords) if(fullText.includes(k.toLowerCase())) return "中區";
+        for(let k of southKeywords) if(fullText.includes(k.toLowerCase())) return "南區";
+        for(let k of eastKeywords) if(fullText.includes(k.toLowerCase())) return "東區";
+        for(let k of islandKeywords) if(fullText.includes(k.toLowerCase())) return "外島";
+        
+        return "全台/線上";
+    }
+
     function setRegionFilter(region, btn) {
         currentRegion = region;
-        // 更新按鈕樣式
         document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         applyFilters();
@@ -516,32 +529,24 @@
         // A. 關鍵字搜尋
         let temp = allCamps.filter(c => c.title.toLowerCase().includes(keyword) || (c.content && c.content.toLowerCase().includes(keyword)));
 
-        // B. 收藏篩選
-        if (isFavOnly) {
-            temp = temp.filter(c => favorites.includes(c.link));
-        }
-
-        // ★ C. 地區篩選 (新增)
+        // B. 地區篩選
         if (currentRegion !== 'all') {
             temp = temp.filter(c => c.region === currentRegion);
         }
 
-        // D. 日期篩選 (一個月內) 與 排序
+        // C. 日期篩選與排序
         const today = new Date();
         if (sortType === 'month') {
             const oneMonthAgo = new Date();
             oneMonthAgo.setDate(today.getDate() - 30);
-            
             temp = temp.filter(c => {
                 let d = new Date(c.date);
                 return d >= oneMonthAgo;
             });
-            // 一個月內預設也是新到舊
             temp.sort((a, b) => new Date(b.date) - new Date(a.date));
         } else if (sortType === 'oldest') {
             temp.sort((a, b) => new Date(a.date) - new Date(b.date));
         } else {
-            // newest (default)
             temp.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
@@ -560,11 +565,6 @@
         document.getElementById('clearBtn').style.display = 'none';
         applyFilters();
         input.focus();
-    }
-    function toggleFavFilter() {
-        isFavOnly = !isFavOnly;
-        document.getElementById('favFilterBtn').classList.toggle('active', isFavOnly);
-        applyFilters();
     }
     function handleSort() { applyFilters(); }
 
@@ -592,22 +592,18 @@
             const isNew = diffDays <= 14;
 
             const isRead = readHistory.includes(camp.link);
-            const isFav = favorites.includes(camp.link);
-
+            
             const card = document.createElement('div');
             card.className = `card ${isRead ? 'read' : ''}`;
             card.style.animationDelay = `${idx * 0.05}s`;
 
-            const heartClass = isFav ? 'ph-heart-fill' : 'ph-heart';
+            // 已移除愛心 click 事件
+            card.onclick = (e) => { openModal(camp); };
 
-            // ★ 顯示地區標籤 (若沒有則顯示未分類)
             const regionLabel = camp.region || '未分類';
 
             card.innerHTML = `
                 ${isNew ? '<div class="card-badge">🔥 NEW</div>' : ''}
-                <div class="card-heart ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${camp.link}')">
-                    <i class="ph ${heartClass}"></i>
-                </div>
                 <div class="card-meta">
                     <span class="card-date">${dStr || '未標示'}</span>
                     <span class="card-region">${regionLabel}</span>
@@ -615,31 +611,10 @@
                 <div class="card-title">${camp.title}</div>
                 <div class="card-preview"><i class="ph ph-arrow-circle-right"></i> 點擊查看詳情</div>
             `;
-            card.onclick = (e) => {
-                if(!e.target.closest('.card-heart')) openModal(camp);
-            };
             list.appendChild(card);
         });
         renderPagination();
         window.scrollTo({top:0, behavior:'smooth'});
-    }
-
-    function toggleFavorite(e, link) {
-        e.stopPropagation();
-        const idx = favorites.indexOf(link);
-        const iconContainer = e.currentTarget;
-        const icon = iconContainer.querySelector('i');
-        if (idx === -1) {
-            favorites.push(link);
-            iconContainer.classList.add('active'); 
-            icon.className = "ph-fill ph-heart";
-        } else {
-            favorites.splice(idx, 1);
-            iconContainer.classList.remove('active'); 
-            icon.className = "ph ph-heart";
-        }
-        localStorage.setItem('camp_favorites', JSON.stringify(favorites));
-        if(isFavOnly && idx !== -1) applyFilters();
     }
 
     function markAsRead(link) {
@@ -739,7 +714,7 @@
     }
     
     document.addEventListener('click', function(e) {
-        if(e.target.closest('.settings-panel') || e.target.closest('.settings-btn') || e.target.closest('.card-heart') || e.target.closest('.share-btn-modal')) return;
+        if(e.target.closest('.settings-panel') || e.target.closest('.settings-btn') || e.target.closest('.card') || e.target.closest('.share-btn-modal')) return;
         
         const ripple = document.createElement('div');
         ripple.classList.add('click-ripple');
