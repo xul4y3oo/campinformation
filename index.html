@@ -3,24 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta name="google-site-verification" content="eTlWow2tdCbWybWcSLT7gVwfGXKxYJBI81nnGLaz75E" />
     <title>高中營隊資訊平台</title>
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>全台高中營隊資訊平台 | 大學營隊查詢與報名</title>
-    <meta name="description" content="彙整全台各大專院校、高中職寒暑假營隊資訊。提供北中南東各地區營隊查詢、報名連結與附件下載，幫助高中生探索大學科系。">
-    <meta name="keywords" content="高中營隊, 大學營隊, 寒假營隊, 暑假營隊, 營隊報名, 科系探索, 學習歷程, 西螺農工, 營隊資訊">
-    <meta name="author" content="梓翔股份有限公司">
-    
-    <meta property="og:title" content="全台高中營隊資訊平台">
-    <meta property="og:description" content="最新、最完整的全台高中營隊懶人包，一鍵查詢、自動篩選！">
-    <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/3069/3069172.png"> <meta property="og:url" content="您的GitHubPages網址">
-    <meta property="og:type" content="website">
-
-    </head>
    <link rel="icon" href="https://cdn-icons-png.flaticon.com/128/18932/18932701.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -218,12 +201,12 @@
             gap: 10px;
             margin-top: 20px;
             justify-content: center;
-            flex-wrap: nowrap; /* 確保不換行，支援橫向滑動 */
-            overflow-x: auto; /* 支援手機滑動 */
+            flex-wrap: nowrap;
+            overflow-x: auto;
             padding-bottom: 5px;
-            -webkit-overflow-scrolling: touch; /* iOS 滑動優化 */
+            -webkit-overflow-scrolling: touch;
         }
-        .region-toolbar::-webkit-scrollbar { display: none; } /* 隱藏捲軸 */
+        .region-toolbar::-webkit-scrollbar { display: none; }
 
         .region-btn {
             white-space: nowrap;
@@ -248,7 +231,7 @@
             box-shadow: 0 4px 10px rgba(111, 183, 183, 0.4);
         }
 
-        /* 工具列 (排序) - 移除收藏 */
+        /* 工具列 (排序) */
         .toolbar { display: flex;
             gap: 10px; margin-top: 15px; justify-content: flex-end; align-items: center; flex-wrap: wrap;
         }
@@ -305,7 +288,7 @@
             color: var(--text-main); padding: 4px 10px;
             border-radius: 4px; font-size: 0.85em; font-weight: 500; 
         }
-        .card-region { background-color: #e0f7fa; color: #006064; } /* 地區標籤顏色 */
+        .card-region { background-color: #e0f7fa; color: #006064; }
 
         .card-title { font-size: 1.2em;
             font-weight: bold; color: var(--text-title); line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -342,13 +325,13 @@
         }
         .modal-title { font-size: 1.6em; font-weight: bold; margin-bottom: 10px; color: var(--primary-green); }
         .modal-content { line-height: 1.8; color: var(--text-main); white-space: pre-wrap; margin-top: 20px; }
+        
+        /* 移除分享按鈕後的動作區塊樣式調整 */
         .modal-actions { display: flex; gap: 10px; margin-top: 30px; }
-        .original-link-btn { flex: 2; text-align: center; background: var(--primary-green); color: white; padding: 15px;
-            border-radius: 10px; font-weight: bold; transition: 0.2s; }
-        .share-btn-modal { flex: 1; text-align: center;
-            background: var(--primary-pink); color: white; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
-            gap: 5px; }
-        .share-btn-modal:hover { background: #e66b88; }
+        .original-link-btn { flex: 1; text-align: center; background: var(--primary-green); color: white; padding: 15px;
+            border-radius: 10px; font-weight: bold; transition: 0.2s; display: block; width: 100%; }
+        .original-link-btn:hover { background: #5ea5a5; }
+
         .attach-link { display: inline-block; background: var(--bg-card); border: 1px solid var(--primary-blue);
             padding: 8px 15px; border-radius: 20px; color: var(--primary-blue); margin: 5px 5px 0 0; font-size: 0.9em; transition: 0.2s;
         }
@@ -455,11 +438,9 @@
             <div id="attachSection" style="margin-top:20px; display:none; background:var(--border-color); padding:15px; border-radius:10px;">
                 <b style="color:var(--text-main);">📎 相關附件：</b><br><div id="modalAttachments" style="margin-top:10px;"></div>
             </div>
+            
             <div class="modal-actions">
                 <a id="modalLink" href="#" target="_blank" class="original-link-btn">前往原始公告</a>
-                <div class="share-btn-modal" onclick="shareCurrentCamp()">
-                    <i class="ph ph-share-network"></i> 分享
-                </div>
             </div>
         </div>
     </div>
@@ -488,7 +469,6 @@
         document.getElementById('loading').style.display = 'none';
         allCamps = data.reverse(); 
 
-        // ★★★ 找出最新的那一筆資料日期 (作為 NEW 的基準) ★★★
         if (allCamps.length > 0) {
             let maxDate = new Date(0);
             allCamps.forEach(c => {
@@ -513,7 +493,7 @@
     function autoClassifyRegion(title, content) {
         const fullText = (title + " " + content).toLowerCase();
         
-        // 1. 北區 (包含縣市與大學)
+        // 1. 北區
         const northKeywords = [
             "基隆", "台北", "臺北", "新北", "桃園", "新竹", "宜蘭",
             "台大", "臺大", "政大", "師大", "陽明", "交大", "清華", "中央", "輔仁", "淡江", "北科", "台科", "文化大學", "銘傳", "實踐", "世新", "北醫", "國北教", "市北教", "馬偕", "長庚"
@@ -531,10 +511,6 @@
         // 4. 東區
         const eastKeywords = ["花蓮", "台東", "臺東", "東華", "慈濟", "台東大學"];
         
-        // ★ 已移除「外島」分類關鍵字，將它們歸類為全台/線上或其他
-        // const islandKeywords = ["澎湖", "金門", "馬祖"]; // 移除
-
-        // 優先順序：標題 > 內容
         for(let k of northKeywords) if(fullText.includes(k.toLowerCase())) return "北區";
         for(let k of centralKeywords) if(fullText.includes(k.toLowerCase())) return "中區";
         for(let k of southKeywords) if(fullText.includes(k.toLowerCase())) return "南區";
@@ -554,15 +530,12 @@
         const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
         const sortType = document.getElementById('sortSelect').value;
 
-        // A. 關鍵字搜尋
         let temp = allCamps.filter(c => c.title.toLowerCase().includes(keyword) || (c.content && c.content.toLowerCase().includes(keyword)));
 
-        // B. 地區篩選
         if (currentRegion !== 'all') {
             temp = temp.filter(c => c.region === currentRegion);
         }
 
-        // C. 日期篩選與排序
         if (sortType === 'month') {
             const today = new Date();
             const oneMonthAgo = new Date();
@@ -614,12 +587,9 @@
             let dStr = camp.date ? String(camp.date).substring(0, 10) : '';
             if(dStr.includes('T')) dStr = dStr.split('T')[0];
             
-            // ★★★ 修改 NEW 邏輯：只有日期「等於」最新發布日的文章才會有 NEW ★★★
-            // 例如最新是 12/23，那 12/22 就不會有 NEW
             let isNew = false;
             if (latestPostDate && dStr) {
                 const campDate = new Date(dStr);
-                // 比較時間戳記，忽略時分秒差異（只比對日期）
                 if (campDate.toDateString() === latestPostDate.toDateString()) {
                     isNew = true;
                 }
@@ -654,33 +624,6 @@
         if (!readHistory.includes(link)) {
             readHistory.push(link);
             localStorage.setItem('camp_read', JSON.stringify(readHistory));
-        }
-    }
-
-    function shareCurrentCamp() {
-        if (!currentModalCamp) return;
-        const text = `【${currentModalCamp.title}】\n詳細資訊：${currentModalCamp.link}\n(來自 高中營隊資訊平台)`;
-        
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        if (isMobile && navigator.share) {
-            navigator.share({
-                title: currentModalCamp.title,
-                text: text,
-                url: currentModalCamp.link
-            }).catch(console.error);
-        } else {
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.querySelector('.share-btn-modal');
-                const originalHtml = btn.innerHTML;
-                btn.innerHTML = '<i class="ph ph-check"></i> 已複製連結！';
-                btn.style.background = '#4cd137'; 
-                setTimeout(() => {
-                    btn.innerHTML = originalHtml;
-                    btn.style.background = ''; 
-                }, 2000);
-            }).catch(err => {
-                alert("複製失敗，請手動複製網址。");
-            });
         }
     }
 
@@ -747,7 +690,7 @@
     }
     
     document.addEventListener('click', function(e) {
-        if(e.target.closest('.settings-panel') || e.target.closest('.settings-btn') || e.target.closest('.card') || e.target.closest('.share-btn-modal')) return;
+        if(e.target.closest('.settings-panel') || e.target.closest('.settings-btn') || e.target.closest('.card')) return;
         
         const ripple = document.createElement('div');
         ripple.classList.add('click-ripple');
