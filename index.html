@@ -396,7 +396,6 @@
             <button class="region-btn" onclick="setRegionFilter('中區', this)">中部</button>
             <button class="region-btn" onclick="setRegionFilter('南區', this)">南部</button>
             <button class="region-btn" onclick="setRegionFilter('東區', this)">東部</button>
-            <button class="region-btn" onclick="setRegionFilter('外島', this)">外島</button>
             <button class="region-btn" onclick="setRegionFilter('全台/線上', this)">線上/其他</button>
         </div>
 
@@ -472,7 +471,7 @@
         document.getElementById('loading').style.display = 'none';
         allCamps = data.reverse(); 
 
-        // ★ 找出最新的那一筆資料日期 (作為 NEW 的基準)
+        // ★★★ 找出最新的那一筆資料日期 (作為 NEW 的基準) ★★★
         if (allCamps.length > 0) {
             let maxDate = new Date(0);
             allCamps.forEach(c => {
@@ -514,15 +513,15 @@
         ];
         // 4. 東區
         const eastKeywords = ["花蓮", "台東", "臺東", "東華", "慈濟", "台東大學"];
-        // 5. 外島
-        const islandKeywords = ["澎湖", "金門", "馬祖"];
+        
+        // ★ 已移除「外島」分類關鍵字，將它們歸類為全台/線上或其他
+        // const islandKeywords = ["澎湖", "金門", "馬祖"]; // 移除
 
-        // 優先順序：標題 > 內容 (但這裡直接搜全文)
+        // 優先順序：標題 > 內容
         for(let k of northKeywords) if(fullText.includes(k.toLowerCase())) return "北區";
         for(let k of centralKeywords) if(fullText.includes(k.toLowerCase())) return "中區";
         for(let k of southKeywords) if(fullText.includes(k.toLowerCase())) return "南區";
         for(let k of eastKeywords) if(fullText.includes(k.toLowerCase())) return "東區";
-        for(let k of islandKeywords) if(fullText.includes(k.toLowerCase())) return "外島";
         
         return "全台/線上";
     }
@@ -598,13 +597,15 @@
             let dStr = camp.date ? String(camp.date).substring(0, 10) : '';
             if(dStr.includes('T')) dStr = dStr.split('T')[0];
             
-            // ★ 修改 NEW 判斷邏輯：以資料庫中最新日期為基準，7天內都算 NEW
+            // ★★★ 修改 NEW 邏輯：只有日期「等於」最新發布日的文章才會有 NEW ★★★
+            // 例如最新是 12/23，那 12/22 就不會有 NEW
             let isNew = false;
             if (latestPostDate && dStr) {
                 const campDate = new Date(dStr);
-                const diffTime = Math.abs(latestPostDate - campDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                if (diffDays <= 7) isNew = true;
+                // 比較時間戳記，忽略時分秒差異（只比對日期）
+                if (campDate.toDateString() === latestPostDate.toDateString()) {
+                    isNew = true;
+                }
             }
 
             const isRead = readHistory.includes(camp.link);
