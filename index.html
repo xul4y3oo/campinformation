@@ -489,32 +489,41 @@
         applyFilters(); 
     }).catch(e => { console.error(e); });
 
+    // ★★★ 關鍵字正規化工具 (台/臺 通用) ★★★
+    function normalizeText(text) {
+        if (!text) return "";
+        return text.toString()
+                   .replace(/臺/g, "台")  // 把「臺」通通換成「台」
+                   .toLowerCase();       // 轉小寫
+    }
+
     // ★★★ 強大的自動分類函式 ★★★
     function autoClassifyRegion(title, content) {
-        const fullText = (title + " " + content).toLowerCase();
+        // 使用 normalizeText 讓分類也支援臺/台通用
+        const fullText = normalizeText(title + " " + content);
         
         // 1. 北區
         const northKeywords = [
-            "基隆", "台北", "臺北", "新北", "桃園", "新竹", "宜蘭",
-            "台大", "臺大", "政大", "師大", "陽明", "交大", "清華", "中央", "輔仁", "淡江", "北科", "台科", "文化大學", "銘傳", "實踐", "世新", "北醫", "國北教", "市北教", "馬偕", "長庚"
+            "基隆", "台北", "新北", "桃園", "新竹", "宜蘭",
+            "台大", "政大", "師大", "陽明", "交大", "清華", "中央", "輔仁", "淡江", "北科", "台科", "文化大學", "銘傳", "實踐", "世新", "北醫", "國北教", "市北教", "馬偕", "長庚"
         ];
         // 2. 中區
         const centralKeywords = [
-            "苗栗", "台中", "臺中", "彰化", "南投", "雲林", "西螺", "農工", "正心",
+            "苗栗", "台中", "彰化", "南投", "雲林", "西螺", "農工", "正心",
             "中興", "東海", "逢甲", "靜宜", "暨南", "彰師", "雲科", "虎尾", "勤益", "朝陽", "亞洲", "中山醫", "中國醫", "聯大"
         ];
         // 3. 南區
         const southKeywords = [
-            "嘉義", "台南", "臺南", "高雄", "屏東", 
+            "嘉義", "台南", "高雄", "屏東", 
             "成大", "中山大學", "中正", "高師", "高醫", "義守", "屏科", "嘉大", "南台", "崑山", "高科", "文藻", "樹德", "海科"
         ];
         // 4. 東區
-        const eastKeywords = ["花蓮", "台東", "臺東", "東華", "慈濟", "台東大學"];
+        const eastKeywords = ["花蓮", "台東", "東華", "慈濟", "台東大學"];
         
-        for(let k of northKeywords) if(fullText.includes(k.toLowerCase())) return "北區";
-        for(let k of centralKeywords) if(fullText.includes(k.toLowerCase())) return "中區";
-        for(let k of southKeywords) if(fullText.includes(k.toLowerCase())) return "南區";
-        for(let k of eastKeywords) if(fullText.includes(k.toLowerCase())) return "東區";
+        for(let k of northKeywords) if(fullText.includes(normalizeText(k))) return "北區";
+        for(let k of centralKeywords) if(fullText.includes(normalizeText(k))) return "中區";
+        for(let k of southKeywords) if(fullText.includes(normalizeText(k))) return "南區";
+        for(let k of eastKeywords) if(fullText.includes(normalizeText(k))) return "東區";
         
         return "全台/線上";
     }
@@ -527,10 +536,15 @@
     }
 
     function applyFilters() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+        // ★ 使用 normalizeText 處理使用者輸入
+        const keyword = normalizeText(document.getElementById('searchInput').value.trim());
         const sortType = document.getElementById('sortSelect').value;
 
-        let temp = allCamps.filter(c => c.title.toLowerCase().includes(keyword) || (c.content && c.content.toLowerCase().includes(keyword)));
+        // ★ 使用 normalizeText 處理文章標題與內容
+        let temp = allCamps.filter(c => 
+            normalizeText(c.title).includes(keyword) || 
+            (c.content && normalizeText(c.content).includes(keyword))
+        );
 
         if (currentRegion !== 'all') {
             temp = temp.filter(c => c.region === currentRegion);
